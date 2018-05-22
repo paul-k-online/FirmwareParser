@@ -3,24 +3,20 @@
     Copyright 2002 Brandon Fosdick (BSD License)
 */
 
-#ifndef INTELHEXH
-#define INTELHEXH
+#ifndef INTELHEX_H
+#define INTELHEX_H
 
-
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <algorithm>
 #include <map>
 #include <vector>
+#include "converter.h"
 
-//#include <unistd.h>
 
 namespace IntelHex
 {
-#define	HEX_FORMAT_INHX8M	0x01
-#define	HEX_FORMAT_INHX32	0x02
-#define NEW_SEGMENT			":02000004"
-#define	INH32M_HEADER_END	"0000FA"
-	//#define	INH32M_HEADER	"02000004"+"0000FA"
-#define EOF_marker			":00000001FF\n"
-
 	//class   hex_data;
 	//typedef hex_data<value_type> container;
 	//typedef uint8_t value_type;
@@ -31,28 +27,31 @@ namespace IntelHex
 	class hex_data
 	{
 	public:
-		//Each line of the hex file generates a block of memory at a particular address
-		typedef	std::vector<ValueType>	data_container;		//Element container
-		//using data_container = std::vector<value_type>;
-		typedef	std::map<address_type, data_container> container;   //List of data blocks
-		typedef typename data_container::size_type	size_type;
+        #define NEW_SEGMENT			":02000004"
+        #define	INH32M_HEADER_END	"0000FA"
+        //#define	INH32M_HEADER	"02000004"+"0000FA"
+        #define EOF_marker			":00000001FF\n"
 
-		enum class data_type
-		{
-			data_block = 0,
-			// EOF record
-			eof_record = 1,
-			// Segment address record (INHX32)
-			segment_address = 2,
-			//Linear address record (INHX32)
-			linear_address = 4,
-		};
+        //Each line of the hex file generates a block of memory at a particular address
+        typedef	std::vector<ValueType>	data_container;		//Element container
+                                                            //using data_container = std::vector<value_type>;
+        typedef	std::map<address_type, data_container> container;   //List of data blocks
+        typedef typename data_container::size_type	size_type;
+
+        enum class HEX_FORMAT
+        {
+            INHX8M,
+            INHX32,
+            I16HEX,
+        };
+        
+
 
 	private:
 		// Value returned for unset addresses
-		ValueType  _fill = 0;
+		ValueType  _fill = 0x00;
 		//Format of the parsed file (necessary?)
-		char	format = 0;
+		HEX_FORMAT	format = static_cast<HEX_FORMAT>(0);
 		// Uses/Has a segment address record
 		bool	segment_addr_rec = false;
 		// Uses/Has a linear address record
@@ -62,8 +61,8 @@ namespace IntelHex
 
 	public:
 		hex_data() = default;
-		hex_data(const std::string &s) {
-			load(s);
+	    explicit hex_data(const std::string &s) {
+			load_intelhex_file(s);
 		}
 
 		typename container::iterator    begin() { return blocks.begin(); }
@@ -100,9 +99,9 @@ namespace IntelHex
 		void	set(address_type, ValueType);
 
 		// Load from a file
-		bool	load(const std::string&);
+		bool	load_intelhex_file(const std::string&);
 		// Read data from an input stream
-		bool	read(std::istream &);
+		bool	read_intelhex_file(std::istream &);
 		//Save hex data to a hex file
 		bool	write(const char *);
 		//Write all data to an output stream
@@ -114,7 +113,7 @@ namespace IntelHex
 	template <typename value_type>
 	bool compare(hex_data<value_type>&, hex_data<value_type>&, value_type, address_type, address_type);
 
-	std::vector<uint8_t> hex2bin(const std::string&);
-	bool hex2bin(char, unsigned&);
+
 }
-#endif
+
+#endif // INTELHEX_H

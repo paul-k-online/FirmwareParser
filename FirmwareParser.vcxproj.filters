@@ -1,45 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="IntelHex">
-      <UniqueIdentifier>{b790ee73-7e56-4814-9dde-de0caab6375a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="IntelHexFile">
-      <UniqueIdentifier>{d813f468-c684-4b42-b057-22332817da66}</UniqueIdentifier>
-    </Filter>
+    <ClCompile Include="converter.cpp" />
+    <ClCompile Include="hex_data.cpp" />
+    <ClCompile Include="IntelHexFile.cpp" />
+    <ClCompile Include="IntelHexFileEntry.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="IntelHex\IntelHex.cpp">
-      <Filter>IntelHex</Filter>
-    </ClCompile>
-    <ClCompile Include="IntelHexFile\IntelHexFile.cpp">
-      <Filter>IntelHexFile</Filter>
-    </ClCompile>
-    <ClCompile Include="IntelHexFile\IntelHexFileEntry.cpp">
-      <Filter>IntelHexFile</Filter>
-    </ClCompile>
-    <ClCompile Include="IntelHexFile\Program.cpp">
-      <Filter>IntelHexFile</Filter>
-    </ClCompile>
-    <ClCompile Include="IntelHexFile\ProgramPage.cpp">
-      <Filter>IntelHexFile</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="IntelHex\IntelHex.h">
-      <Filter>IntelHex</Filter>
-    </ClInclude>
-    <ClInclude Include="IntelHexFile\IntelHexFile.h">
-      <Filter>IntelHexFile</Filter>
-    </ClInclude>
-    <ClInclude Include="IntelHexFile\IntelHexFileEntry.h">
-      <Filter>IntelHexFile</Filter>
-    </ClInclude>
-    <ClInclude Include="IntelHexFile\Program.h">
-      <Filter>IntelHexFile</Filter>
-    </ClInclude>
-    <ClInclude Include="IntelHexFile\ProgramPage.h">
-      <Filter>IntelHexFile</Filter>
-    </ClInclude>
+    <ClInclude Include="converter.h" />
+    <ClInclude Include="hex_data.h" />
+    <ClInclude Include="IntelHexFile.h" />
+    <ClInclude Include="IntelHexFileEntry.h" />
   </ItemGroup>
 </Project>

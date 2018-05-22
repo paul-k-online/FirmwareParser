@@ -1,12 +1,10 @@
 /*
  *    Routines for reading/writing Intel INHX8M and INHX32 files
  */
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <algorithm>
 
-#include "IntelHex.h"
+
+#include "hex_data.h"
+#include "IntelHexFileEntry.h"
 
 
 namespace IntelHex
@@ -108,7 +106,7 @@ namespace IntelHex
 	void hex_data<ValueType>::clear()
 	{
 		_fill = 0;
-		format = HEX_FORMAT_INHX8M;
+		format = HEX_FORMAT::INHX8M;
 		linear_addr_rec = false;
 		segment_addr_rec = false;
 		blocks.clear();
@@ -294,24 +292,31 @@ namespace IntelHex
 		auto i = blocks.rbegin();
 		while ((i != blocks.rend()) && (i->first > addr))
 			++i;
+
+		/*for (i = blocks.rbegin(); (i != blocks.rend()) && ; ++i) {
+			if (i->first <= addr) {
+				return (addr - i->first) <= i->second.size();
+			}
+		}
+		*/
 		return (addr - i->first) <= i->second.size();
 	}
 
 
 	// Load from a file
 	template <typename ValueType>
-	bool hex_data<ValueType>::load(const std::string &path)
+	bool hex_data<ValueType>::load_intelhex_file(const std::string &path)
 	{
 		std::ifstream f(path.c_str());
-		return read(f);
+		return read_intelhex_file(f);
 	}
 
 	
 	// Read data from an input stream
 	template <typename ValueType>
-	bool hex_data<ValueType>::read(std::istream &s)
+	bool hex_data<ValueType>::read_intelhex_file(std::istream &s)
 	{
-		address_type	linear_address(0);
+        address_type linear_address(0);
 
 		while (s.get() == ':' && s.good())
 		{
@@ -319,18 +324,18 @@ namespace IntelHex
 			getline(s, line);		    // Read the whole line
 			if (line.size() <= 10)	    // Ignore truncated lines
 				break;
-			std::vector<ValueType> buffer = hex2bin(line);
+			std::vector<ValueType> buffer = converter::hex2bin(line);
 			if (!buffer.size())  // Ignore lines with bad checksums
 				break;
 
 			auto length = buffer[0];
 			address_type address = (buffer[1] << 8) | buffer[2];
-			const auto type = static_cast<data_type>(buffer[3]);
+			const auto type = static_cast<IntelHexFileEntry::Record_Type>(buffer[3]);
 			auto data = &buffer[4];
 
 			switch (type)
 			{
-			case data_type::data_block:
+			case IntelHexFileEntry::Record_Type::data:
 			{
 				address += linear_address;
 				for (auto& block : blocks) // Find a block that includes address
@@ -368,14 +373,14 @@ namespace IntelHex
 				break;
 			}
 				
-			case data_type::eof_record: 	// Ignore
+			case IntelHexFileEntry::Record_Type::eof: 	// Ignore
 				break;
 
-			case data_type::segment_address:
+			case IntelHexFileEntry::Record_Type::extended_segment_address:
 				segment_addr_rec = true;
 				break;
 			
-			case data_type::linear_address:
+			case IntelHexFileEntry::Record_Type::extended_linear_address:
 				if (0 == address && 2 == length)
 				{
 					linear_address = ((buffer[4] << 8) | buffer[5]) << 16;
@@ -509,35 +514,8 @@ namespace IntelHex
 		}
 	}
 
-
-
-	// Convert a string from hex to binary and append it to a block
-	std::vector<uint8_t> hex2bin(const std::string& from)
-	{
-		std::vector<uint8_t> to;
-		to.reserve(from.size() / 2);
-		to.clear();
-
-		auto first = true;
-		unsigned bin = 0;
-		for (auto& i : from)
-		{
-			if (!hex2bin(i, bin))
-				break;
-			uint16_t value;
-			if (first)
-				value = bin << 4;
-			else
-			{
-				value |= bin;
-				to.push_back(value);
-			}
-			first = !first;
-		}
-		return to;
-	}
-
-	//Compare two sets of hex data
+	
+    //Compare two sets of hex data
 	//	Return true if every word in hex1 has a corresponding, and equivalent, word in hex2
 	template <typename T>
 	bool compare(hex_data<T>& hex1, hex_data<T>& hex2, const T mask, const address_type begin, const address_type end)
@@ -561,17 +539,4 @@ namespace IntelHex
 		return true;
 	}
 
-
-	bool hex2bin(char ch, unsigned& val)
-	{
-		if (ch >= '0' && ch <= '9')
-			val = ch - '0';
-		else if (ch >= 'A' && ch <= 'F')
-			val = ch - 'A' + 10;
-		else if (ch >= 'a' && ch <= 'f')
-			val = ch - 'a' + 10;
-		else
-			return false;
-		return true;
-	}
 }
