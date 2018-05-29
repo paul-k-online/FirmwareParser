@@ -1,15 +1,48 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="converter.cpp" />
-    <ClCompile Include="hex_data.cpp" />
-    <ClCompile Include="IntelHexFile.cpp" />
-    <ClCompile Include="IntelHexFileEntry.cpp" />
+    <Filter Include="intel_hex">
+      <UniqueIdentifier>{ba323bb9-e1ba-4198-a0e7-cbbd483f0d9e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="converter.h" />
-    <ClInclude Include="hex_data.h" />
-    <ClInclude Include="IntelHexFile.h" />
-    <ClInclude Include="IntelHexFileEntry.h" />
+    <ClCompile Include="intel_hex\converter.cpp">
+      <Filter>intel_hex</Filter>
+    </ClCompile>
+    <ClCompile Include="intel_hex\hex_data.cpp">
+      <Filter>intel_hex</Filter>
+    </ClCompile>
+    <ClCompile Include="intel_hex\intel_hex_file.cpp">
+      <Filter>intel_hex</Filter>
+    </ClCompile>
+    <ClCompile Include="firmware.cpp" />
+    <ClCompile Include="firmware_block.cpp" />
+    <ClCompile Include="intel_hex\intel_hex_entry.cpp">
+      <Filter>intel_hex</Filter>
+    </ClCompile>
+    <ClCompile Include="intel_hex\intel_hex_firmware.cpp">
+      <Filter>intel_hex</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="intel_hex\converter.h">
+      <Filter>intel_hex</Filter>
+    </ClInclude>
+    <ClInclude Include="intel_hex\hex_data.h">
+      <Filter>intel_hex</Filter>
+    </ClInclude>
+    <ClInclude Include="intel_hex\intel_hex_file.h">
+      <Filter>intel_hex</Filter>
+    </ClInclude>
+    <ClInclude Include="firmware.h" />
+    <ClInclude Include="firmware_block.h" />
+    <ClInclude Include="intel_hex\intel_hex_entry.h">
+      <Filter>intel_hex</Filter>
+    </ClInclude>
+    <ClInclude Include="intel_hex\intel_hex_firmware.h">
+      <Filter>intel_hex</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h" />
   </ItemGroup>
 </Project>

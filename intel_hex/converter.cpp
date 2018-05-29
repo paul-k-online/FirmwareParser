@@ -2,7 +2,7 @@
 
 
 
-uint64_t converter::asciiHexTo64(const std::string& s)
+uint64_t converter::hex_to_64(const std::string& s)
 {
     std::stringstream o;
     o << std::hex << s;
@@ -12,7 +12,7 @@ uint64_t converter::asciiHexTo64(const std::string& s)
 }
 
 
-bool converter::hex2bin(char ch, unsigned& val)
+bool converter::hex_to_bin(const char ch, unsigned& val)
 {
     if (ch >= '0' && ch <= '9')
         val = ch - '0';
@@ -27,7 +27,7 @@ bool converter::hex2bin(char ch, unsigned& val)
 
 
 // Convert a string from hex to binary and append it to a block
-std::vector<uint8_t> converter::hex2bin(const std::string& from)
+std::vector<uint8_t> converter::hex_to_8_array(const std::string& from)
 {
     std::vector<uint8_t> to;
     to.reserve(from.size() / 2);
@@ -38,15 +38,15 @@ std::vector<uint8_t> converter::hex2bin(const std::string& from)
     for (auto& i : from)
     {
         unsigned bin = 0;
-        if (!hex2bin(i, bin))
+        if (!hex_to_bin(i, bin))
             break;
-        uint16_t value;
+        uint8_t value;
         if (first)
             value = bin << 4;
         else
         {
             value |= bin;
-            to.push_back(value);
+            to.emplace_back(value);
         }
         first = !first;
     }

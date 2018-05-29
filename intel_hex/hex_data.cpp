@@ -4,14 +4,14 @@
 
 
 #include "hex_data.h"
-#include "IntelHexFileEntry.h"
+#include "intel_hex_entry.h"
 
 
 namespace IntelHex
 {
 	// Array access operator
-	template <typename ValueType>
-	ValueType& hex_data<ValueType>::operator[](const address_type address)
+	template <typename DataType>
+	DataType& hex_data<DataType>::operator[](const address_type address)
 	{
 		// Start at the end of the list and find the first (last) block with an address less than addr
 		for(auto i = blocks.rbegin(); i != blocks.rend(); ++i)
@@ -29,8 +29,8 @@ namespace IntelHex
 
 
 	// Return the value at address, or _fill if not set
-	template <typename ValueType>
-	ValueType hex_data<ValueType>::get(address_type address)
+	template <typename DataType>
+	DataType hex_data<DataType>::get(address_type address)
 	{
 		// Start at the end of the list and find the first (last) block with an address less than addr
 		for (auto i = blocks.rbegin(); i != blocks.rend(); ++i)
@@ -48,8 +48,8 @@ namespace IntelHex
 
 
 	// Set the value at address or create a new element using value
-	template <typename ValueType>
-	void hex_data<ValueType>::set(address_type address, ValueType value)
+	template <typename DataType>
+	void hex_data<DataType>::set(address_type address, DataType value)
 	{
 		if (value == fill())	// Handle fill values
 		{
@@ -82,8 +82,8 @@ namespace IntelHex
 
 
 	// Merge adjacent blocks
-	template <typename ValueType>
-	void hex_data<ValueType>::compact()
+	template <typename DataType>
+	void hex_data<DataType>::compact()
 	{
 		auto previous = blocks.begin();
 		auto i = previous;
@@ -102,8 +102,8 @@ namespace IntelHex
 
 	
 	// Delete all allocated memory
-	template <typename ValueType>
-	void hex_data<ValueType>::clear()
+	template <typename DataType>
+	void hex_data<DataType>::clear()
 	{
 		_fill = 0;
 		format = HEX_FORMAT::INHX8M;
@@ -114,8 +114,8 @@ namespace IntelHex
 
 
 	// Erase a single element at the given address
-	template <typename ValueType>
-	void hex_data<ValueType>::erase(const address_type address)
+	template <typename DataType>
+	void hex_data<DataType>::erase(const address_type address)
 	{
 		for (auto i = blocks.begin(); i != blocks.end(); ++i)
 		{
@@ -147,8 +147,8 @@ namespace IntelHex
 
 
 	// Erase [first, last]
-	template <typename ValueType>
-	void hex_data<ValueType>::erase(address_type first, address_type last)
+	template <typename DataType>
+	void hex_data<DataType>::erase(address_type first, address_type last)
 	{
 		if (first > last)
 			std::swap(first, last);
@@ -197,8 +197,8 @@ namespace IntelHex
 	}
 
 
-	template <typename ValueType>
-	typename hex_data<ValueType>::size_type hex_data<ValueType>::size()
+	template <typename DataType>
+	typename hex_data<DataType>::size_type hex_data<DataType>::size()
 	{
 		size_type s = 0;
 		for (auto& block : blocks)
@@ -208,8 +208,8 @@ namespace IntelHex
 
 
 	// Returns the number of populated elements with addresses less than addr
-	template <typename ValueType>
-	typename hex_data<ValueType>::size_type hex_data<ValueType>::size_below_addr(const address_type addr)
+	template <typename DataType>
+	typename hex_data<DataType>::size_type hex_data<DataType>::size_below_addr(const address_type addr)
 	{
 		size_type s = 0;
 		for (auto& block : blocks)
@@ -224,8 +224,8 @@ namespace IntelHex
 
 
 	// number of words in [lo, hi)
-	template <typename ValueType>
-	typename hex_data<ValueType>::size_type hex_data<ValueType>::size_in_range(const address_type lo, const address_type hi)
+	template <typename DataType>
+	typename hex_data<DataType>::size_type hex_data<DataType>::size_in_range(const address_type lo, const address_type hi)
 	{
 		size_type s = 0;
 		for (auto& block : blocks) 
@@ -249,8 +249,8 @@ namespace IntelHex
 
 
 	// Return the max address of all of the set words with addresses less than or equal to hi
-	template <typename ValueType>
-	address_type hex_data<ValueType>::max_addr_below(const address_type hi)
+	template <typename DataType>
+	address_type hex_data<DataType>::max_addr_below(const address_type hi)
 	{
 		address_type s = 0;
 		for (auto& block : blocks)
@@ -269,24 +269,24 @@ namespace IntelHex
 
 
 	// Lowest address
-	template <typename ValueType>
-	address_type hex_data<ValueType>::min_address() const
+	template <typename DataType>
+	address_type hex_data<DataType>::min_address() const
 	{
 		return blocks.begin()->first;
 	}
 
 
 	// Highest address
-	template <typename ValueType>
-	address_type hex_data<ValueType>::max_address() const
+	template <typename DataType>
+	address_type hex_data<DataType>::max_address() const
 	{
 		return blocks.rbegin()->first + blocks.rbegin()->second.size() - 1;
 	}
 
 
 	//Return true if an element exists at addr
-	template <typename ValueType>
-	bool hex_data<ValueType>::is_set(const address_type addr)
+	template <typename DataType>
+	bool hex_data<DataType>::is_set(const address_type addr)
 	{
 		// Start at the end of the list and find the first (last) block with an address less than addr
 		auto i = blocks.rbegin();
@@ -304,8 +304,8 @@ namespace IntelHex
 
 
 	// Load from a file
-	template <typename ValueType>
-	bool hex_data<ValueType>::load_intelhex_file(const std::string &path)
+	template <typename DataType>
+	bool hex_data<DataType>::load_intelhex_file(const std::string &path)
 	{
 		std::ifstream f(path.c_str());
 		return read_intelhex_file(f);
@@ -313,8 +313,8 @@ namespace IntelHex
 
 	
 	// Read data from an input stream
-	template <typename ValueType>
-	bool hex_data<ValueType>::read_intelhex_file(std::istream &s)
+	template <typename DataType>
+	bool hex_data<DataType>::read_intelhex_file(std::istream &s)
 	{
         address_type linear_address(0);
 
@@ -324,25 +324,25 @@ namespace IntelHex
 			getline(s, line);		    // Read the whole line
 			if (line.size() <= 10)	    // Ignore truncated lines
 				break;
-			std::vector<ValueType> buffer = converter::hex2bin(line);
+			std::vector<DataType> buffer = converter::hex_to_bin(line);
 			if (!buffer.size())  // Ignore lines with bad checksums
 				break;
 
 			auto length = buffer[0];
 			address_type address = (buffer[1] << 8) | buffer[2];
-			const auto type = static_cast<IntelHexFileEntry::Record_Type>(buffer[3]);
+			const auto type = static_cast<intel_hex_entry::Record_Type>(buffer[3]);
 			auto data = &buffer[4];
 
 			switch (type)
 			{
-			case IntelHexFileEntry::Record_Type::data:
+			case intel_hex_entry::Record_Type::data:
 			{
 				address += linear_address;
 				for (auto& block : blocks) // Find a block that includes address
 				{
 					address_type num = 0;
 					// If the start of the new block is interior to an existing block...
-					if ((block.first <= address) && ((block.first + block.second.size()) > address))
+					if ((address >= block.first) && (address < (block.first + block.second.size())))
 					{
 						// Store the portion of the new block that overlaps the existing block
 						const auto index = address - block.first;
@@ -373,14 +373,14 @@ namespace IntelHex
 				break;
 			}
 				
-			case IntelHexFileEntry::Record_Type::eof: 	// Ignore
+			case intel_hex_entry::Record_Type::eof: 	// Ignore
 				break;
 
-			case IntelHexFileEntry::Record_Type::extended_segment_address:
+			case intel_hex_entry::Record_Type::extended_segment_address:
 				segment_addr_rec = true;
 				break;
 			
-			case IntelHexFileEntry::Record_Type::extended_linear_address:
+			case intel_hex_entry::Record_Type::extended_linear_address:
 				if (0 == address && 2 == length)
 				{
 					linear_address = ((buffer[4] << 8) | buffer[5]) << 16;
@@ -397,8 +397,8 @@ namespace IntelHex
 
 
 	// Write all data to a file
-	template <typename ValueType>
-	bool hex_data<ValueType>::write(const char *path)
+	template <typename DataType>
+	bool hex_data<DataType>::write(const char *path)
 	{
 		std::ofstream	ofs(path);
 		if (!ofs)	// Bail out on bad files
@@ -410,8 +410,8 @@ namespace IntelHex
 
 
 	// Write all data to an output stream
-	template <typename ValueType>
-	bool hex_data<ValueType>::write(std::ostream &os)
+	template <typename DataType>
+	bool hex_data<DataType>::write(std::ostream &os)
 	{
 		uint8_t		checksum;
 		uint16_t	linear_address(0);
@@ -496,8 +496,8 @@ namespace IntelHex
 
 	// Make things pretty
 	//  Truncate blocks to a given length as needed
-	template <typename ValueType>
-	void hex_data<ValueType>::tidy(size_type length)
+	template <typename DataType>
+	void hex_data<DataType>::tidy(size_type length)
 	{
 		for (auto& block : blocks)
 		{

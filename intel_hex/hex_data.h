@@ -3,8 +3,8 @@
     Copyright 2002 Brandon Fosdick (BSD License)
 */
 
-#ifndef INTELHEX_H
-#define INTELHEX_H
+#ifndef __HEX_DATA_H__
+#define __HEX_DATA_H__
 
 #include <fstream>
 #include <iostream>
@@ -23,7 +23,7 @@ namespace IntelHex
 	typedef uint32_t address_type;
 
 	//The data set that results from parsing a hex file
-	template <typename ValueType>
+	template <typename DataType>
 	class hex_data
 	{
 	public:
@@ -33,7 +33,7 @@ namespace IntelHex
         #define EOF_marker			":00000001FF\n"
 
         //Each line of the hex file generates a block of memory at a particular address
-        typedef	std::vector<ValueType>	data_container;		//Element container
+        typedef	std::vector<DataType>	data_container;		//Element container
                                                             //using data_container = std::vector<value_type>;
         typedef	std::map<address_type, data_container> container;   //List of data blocks
         typedef typename data_container::size_type	size_type;
@@ -49,7 +49,7 @@ namespace IntelHex
 
 	private:
 		// Value returned for unset addresses
-		ValueType  _fill = 0x00;
+		DataType  _fill = 0x00;
 		//Format of the parsed file (necessary?)
 		HEX_FORMAT	format = static_cast<HEX_FORMAT>(0);
 		// Uses/Has a segment address record
@@ -76,8 +76,8 @@ namespace IntelHex
 		void	erase(address_type);
 		// Erase [first, last]
 		void 	erase(address_type first, address_type last);
-		ValueType  fill() const { return _fill; }
-		void	    fill(const ValueType f) { _fill = f; }
+		DataType  fill() const { return _fill; }
+		void	    fill(const DataType f) { _fill = f; }
 		size_type   size();
 		size_type   size_below_addr(address_type);
 		//number of words in [lo, hi)
@@ -92,11 +92,11 @@ namespace IntelHex
 		bool	is_set(address_type);
 
 		//Array access operator
-		ValueType& operator[](address_type);
+		DataType& operator[](address_type);
 		// Return the value at address
-		ValueType  get(address_type);
+		DataType  get(address_type);
 		// Set the value at address
-		void	set(address_type, ValueType);
+		void	set(address_type, DataType);
 
 		// Load from a file
 		bool	load_intelhex_file(const std::string&);
@@ -116,4 +116,4 @@ namespace IntelHex
 
 }
 
-#endif // INTELHEX_H
+#endif // __HEX_DATA_H__
