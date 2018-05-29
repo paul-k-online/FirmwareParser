@@ -12,9 +12,6 @@
     <ClCompile Include="intel_hex\hex_data.cpp">
       <Filter>intel_hex</Filter>
     </ClCompile>
-    <ClCompile Include="intel_hex\intel_hex_file.cpp">
-      <Filter>intel_hex</Filter>
-    </ClCompile>
     <ClCompile Include="firmware.cpp" />
     <ClCompile Include="firmware_block.cpp" />
     <ClCompile Include="intel_hex\intel_hex_entry.cpp">
@@ -30,9 +27,6 @@
       <Filter>intel_hex</Filter>
     </ClInclude>
     <ClInclude Include="intel_hex\hex_data.h">
-      <Filter>intel_hex</Filter>
-    </ClInclude>
-    <ClInclude Include="intel_hex\intel_hex_file.h">
       <Filter>intel_hex</Filter>
     </ClInclude>
     <ClInclude Include="firmware.h" />

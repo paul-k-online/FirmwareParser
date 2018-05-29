@@ -23,7 +23,6 @@
     <ClCompile Include="firmware_block.cpp" />
     <ClCompile Include="intel_hex\converter.cpp" />
     <ClCompile Include="intel_hex\hex_data.cpp" />
-    <ClCompile Include="intel_hex\intel_hex_file.cpp" />
     <ClCompile Include="intel_hex\intel_hex_entry.cpp" />
     <ClCompile Include="intel_hex\intel_hex_firmware.cpp" />
     <ClCompile Include="main.cpp" />
@@ -33,7 +32,6 @@
     <ClInclude Include="firmware_block.h" />
     <ClInclude Include="intel_hex\converter.h" />
     <ClInclude Include="intel_hex\hex_data.h" />
-    <ClInclude Include="intel_hex\intel_hex_file.h" />
     <ClInclude Include="intel_hex\intel_hex_entry.h" />
     <ClInclude Include="intel_hex\intel_hex_firmware.h" />
     <ClInclude Include="stdafx.h" />

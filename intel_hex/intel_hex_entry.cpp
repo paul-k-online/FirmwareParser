@@ -1,9 +1,6 @@
 #include "intel_hex_entry.h"
 
-using namespace std;
-
-template <typename DataType>
-bool intel_hex_entry<DataType>::parse_from_string(const std::string& string, intel_hex_entry &entry)
+bool intel_hex_entry::parse_from_string(const std::string& string, intel_hex_entry &entry)
 {
     if (string[0] != record_mark)
     {
@@ -19,7 +16,7 @@ bool intel_hex_entry<DataType>::parse_from_string(const std::string& string, int
 
     entry.m_record_type = static_cast<Record_Type>(converter::hex_to_64(string.substr(rec_type_pos, 2)));
 
-    const auto data_type_size = sizeof DataType;
+    const auto data_type_size = 1; /*sizeof uint8_t*/
     const auto data_type_length = data_type_size * 2;
     const auto data_offset = 1 + 2 + 4 + 2;
     if (string.length() != data_offset + count * data_type_length + 2)
@@ -33,9 +30,9 @@ bool intel_hex_entry<DataType>::parse_from_string(const std::string& string, int
 
     entry.m_data.reserve(count);
     entry.m_data.clear();
-    for (auto i = 0; i < count; i += 1)
+    for (auto i = 0; i < count; i++)
     {
-        DataType v = converter::hex_to_64(string.substr(data_offset + i * data_type_length, 2));
+        auto v = converter::hex_to_64(string.substr(data_offset + i * data_type_length, 2));
         entry.m_data.emplace_back(v);
     }
 
@@ -51,14 +48,13 @@ bool intel_hex_entry<DataType>::parse_from_string(const std::string& string, int
             << "checksum_calc = 0x" << static_cast<size_t>(checksum_calc)
             << ", checksum_read = 0x" << static_cast<size_t>(entry.m_checksum)
             << std::endl;
-        throw ios_base::failure(o.str());
+        throw std::ios_base::failure(o.str());
     }
 
     return true;
 }
 
-template <typename DataType>
-bool intel_hex_entry<DataType>::parse_from_stream(const std::stringstream& stream, intel_hex_entry &entry)
+bool intel_hex_entry::parse_from_stream(const std::stringstream& stream, intel_hex_entry &entry)
 {
     char mark;
     //stream >> mark;
@@ -112,10 +108,9 @@ bool intel_hex_entry<DataType>::parse_from_stream(const std::stringstream& strea
     return false;
 }
 
-template <typename DataType>
-bool intel_hex_entry<DataType>::compile_to_string(const intel_hex_entry& entry, std::string& string)
+bool intel_hex_entry::compile_to_string(const intel_hex_entry& entry, std::string& string)
 {
-    stringstream ss;
+    std::stringstream ss;
     ss.setf(std::ios::hex, std::ios::basefield);	//Set the stream to ouput hex instead of decimal
     ss.setf(std::ios::uppercase);			//Use uppercase hex notation
     ss.fill('0');							//Pad with zeroes
@@ -132,7 +127,7 @@ bool intel_hex_entry<DataType>::compile_to_string(const intel_hex_entry& entry, 
     {
         for (const auto& data : entry.m_data)
         {
-            ss.width(2 * sizeof DataType);
+            ss.width(2);
             ss << unsigned(data);
         }
     }
@@ -143,8 +138,7 @@ bool intel_hex_entry<DataType>::compile_to_string(const intel_hex_entry& entry, 
     return true;
 }
 
-template <typename DataType>
-uint8_t intel_hex_entry<DataType>::calc_checksum() const
+uint8_t intel_hex_entry::calc_checksum() const
 {
     const auto hAddress = m_address >> 8 & 0xFF;
     const auto lAddress = m_address >> 0 & 0xFF;
@@ -158,54 +152,53 @@ uint8_t intel_hex_entry<DataType>::calc_checksum() const
     return checksum;
 }
 
-template <typename DataType>
-intel_hex_entry<DataType>::intel_hex_entry(const std::string& entry)
+intel_hex_entry::intel_hex_entry(const std::string& entry)
 {
     m_valid = parse_from_string(entry, *this);
 }
 
-template <typename DataType>
-uint16_t intel_hex_entry<DataType>::address() const
+uint16_t intel_hex_entry::address() const
 {
 	return m_address;
 }
 
-template <typename DataType>
-uint16_t intel_hex_entry<DataType>::end_address() const
+uint16_t intel_hex_entry::end_address() const
 {
 	return m_address + m_data.size();
 }
 
-template <typename DataType>
-typename intel_hex_entry<DataType>::Record_Type intel_hex_entry<DataType>::record_type() const
+typename intel_hex_entry::Record_Type intel_hex_entry::record_type() const
 {
 	return m_record_type;
 }
 
-template <typename DataType>
-std::vector<DataType>& intel_hex_entry<DataType>::data()
+std::vector<uint8_t>& intel_hex_entry::data()
 {
     return m_data;
 }
 
-template <typename DataType>
-const std::vector<DataType>& intel_hex_entry<DataType>::const_data() const
+const std::vector<uint8_t>& intel_hex_entry::const_data() const
 {
 	return m_data;
 }
 
-template <typename DataType>
-std::string intel_hex_entry<DataType>::to_string() const
+std::string intel_hex_entry::to_string() const
 {
     std::string string;
-    auto result = compile_to_string(*this, string);
+    const auto result = compile_to_string(*this, string);
     if (result)
         return string;
     return "";
 }
 
-template <typename DataType>
-bool intel_hex_entry<DataType>::is_valid() const
+bool intel_hex_entry::is_valid() const
 {
     return m_valid && m_checksum == calc_checksum();
+}
+
+bool intel_hex_entry::equals_without_data(const intel_hex_entry& r, const intel_hex_entry& l)
+{
+    return r.m_address == l.m_address
+        && r.m_record_type == l.m_record_type
+        && r.m_data.size() == l.m_data.size();
 }

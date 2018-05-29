@@ -1,41 +1,127 @@
 #include "intel_hex_firmware.h"
 
-template <typename DataType>
-std::map<uint32_t, std::vector<DataType>>& 
-intel_hex_firmware<DataType>::intel_entry_list_to_data_map(
-    const std::list<intel_hex_entry<DataType>>& entries)
+
+bool intel_hex_firmware::parse_file(const std::string& filename, std::list<intel_hex_entry> &entry_list)
 {
-    std::map<uint32_t, std::vector<DataType>> blocks;
+    std::ifstream file(filename.c_str());
+    if (!file.is_open())
+    {
+        return false;
+        std::stringstream o;
+        o << "Cannot load file " << filename;
+        throw std::ios_base::failure(o.str());
+    }
 
-    uint16_t address_MSW = 0;
+    while (file)
+    {
+        std::string line;
+        std::getline(file, line);
+        if (!line.empty()) 
+        {
+            intel_hex_entry entry(line);
+            if (!entry.is_valid())
+                return false;
+            entry_list.push_back(entry);
+        }
+    }
+    return true;
+}
 
-    for (auto& entry : entries)
+
+bool intel_hex_firmware::to_data_map(
+    const std::list<intel_hex_entry>& msb_entries,
+    const std::list<intel_hex_entry>& lsb_entries, 
+    std::map<uint32_t, std::vector<uint16_t>>& word_blocks)
+{
+    auto result = std::equal(msb_entries.begin(), msb_entries.end(), 
+        lsb_entries.begin(), lsb_entries.end(), 
+        intel_hex_entry::equals_without_data);
+    
+    std::map<uint32_t, std::vector<uint8_t>> msb_blocks;
+    if (result) {
+        result = to_data_map(msb_entries, msb_blocks);
+    }
+    
+    std::map<uint32_t, std::vector<uint8_t>> lsb_blocks;
+    if (result) {
+        result = to_data_map(lsb_entries, lsb_blocks);
+    }
+    
+    return to_data_map(msb_blocks, lsb_blocks, word_blocks);
+}
+
+
+
+
+bool intel_hex_firmware::to_data_map(const std::map<uint32_t, std::vector<uint8_t>>& msb_blocks,
+    const std::map<uint32_t, std::vector<uint8_t>>& lsb_blocks,
+    std::map<uint32_t, std::vector<uint16_t>>& blocks)
+{
+    auto result = msb_blocks.size() == lsb_blocks.size();
+        
+    if (result) {
+        auto msb_iter = msb_blocks.cbegin();
+        auto lsb_iter = lsb_blocks.cbegin();
+
+        while (msb_iter != msb_blocks.cend() || lsb_iter != lsb_blocks.cend())
+        {
+            if ((*msb_iter).first != (*lsb_iter).first)
+            {
+                result = false;
+                break;
+            }
+
+            std::vector<uint16_t> word_vector;
+            result = converter::make_word((*msb_iter).second, (*lsb_iter).second, word_vector);
+            if (!result)
+                break;
+            blocks.try_emplace((*msb_iter).first, word_vector);
+
+            ++msb_iter;
+            ++lsb_iter;
+        }
+    }
+    return result;
+}
+
+
+
+
+
+template <typename DataType>
+bool intel_hex_firmware::to_data_map(const std::list<intel_hex_entry>& entries, std::map<uint32_t, std::vector<DataType>>& blocks)
+{
+    //std::map<uint32_t, std::vector<DataType>> blocks;
+    uint32_t address_msw = 0;
+
+    for (const auto& entry : entries)
     {
         switch (entry.record_type()) {
-        case intel_hex_entry<DataType>::Record_Type::extended_linear_address:
-            if (entry.address() == 0 && entry.const_data().size() == 2)
-                address_MSW = (entry.const_data()[0] & 0xFF << 8) | (entry.const_data()[1] & 0xFF << 0);
+
+        case intel_hex_entry::Record_Type::extended_linear_address:
+            if (entry.address() == 0 && entry.const_data().size() == 2) 
+                address_msw = ((entry.const_data()[0] & 0xFF << 8) | (entry.const_data()[1] & 0xFF << 0)) << 16;
             break;
-        case intel_hex_entry<DataType>::Record_Type::data:
+
+        case intel_hex_entry::Record_Type::data:
         {
             auto find_block = false;
-            const uint32_t address = (address_MSW << 16 & 0xFFFF) | entry.address();
-            const uint32_t end_address = address + entry.const_data().size();
+            const uint32_t address = address_msw | entry.address();
 
             for (auto& block : blocks)
             {
-                // start of entry is inside to an block...
-                if (address >= block.first  &&  address <= block.first + block.second.size()) {
+                // start of entry is inside to an block
+                if (address >= block.first  &&  address <= block.first + block.second.size())
+                {
                     find_block = true;
-                    const auto index = address - block.first;
-                    join_vectors(block.second, index, entry.const_data(), uint8_t(0xff));
+                    join_vectors(block.second, address - block.first, entry.const_data(), uint8_t(0xff));
                     break;
                 }
-                // end of entry is inside to an block...
-                if (address < block.first  &&  end_address >= block.first) {
+                // end of entry is inside to an block
+                if (address < block.first  &&  address + entry.const_data().size() >= block.first)
+                {
                     find_block = true;
-                    const auto index = address - block.first;
-                    join_vectors(block.second, index, entry.const_data(), uint8_t(0xff));
+                    join_vectors(block.second, address - block.first, entry.const_data(), uint8_t(0xff));
                     break;
                 }
             }
@@ -46,17 +132,19 @@ intel_hex_firmware<DataType>::intel_entry_list_to_data_map(
             }
             break;
         }
+
         default: 
                 break;
         }
 
     }
-    return blocks;
+    ///return blocks;
+    return true;
 }
 
 
 template <typename DataType>
-void intel_hex_firmware<DataType>::join_vectors(std::vector<DataType>& dest, int index, const std::vector<DataType>& src, DataType fill)
+bool intel_hex_firmware::join_vectors(std::vector<DataType>& dest, int index, const std::vector<DataType>& src, DataType fill)
 {
     if (index >= 0)
     {
@@ -76,5 +164,5 @@ void intel_hex_firmware<DataType>::join_vectors(std::vector<DataType>& dest, int
             dest.insert(dest.begin(), add_size, fill);
         std::copy(src.begin(), src.end(), dest.begin());
     }
-    //return dest;
+    return true;
 }

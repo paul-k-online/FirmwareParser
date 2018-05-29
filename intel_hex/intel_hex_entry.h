@@ -14,7 +14,6 @@
 #include "converter.h"
 
 
-template <typename DataType>
 class intel_hex_entry
 {
     static const char record_mark = ':';
@@ -34,7 +33,7 @@ public:
         start_linear_address = 0x05,
     };
 
-    explicit intel_hex_entry(const uint16_t address, const std::vector<DataType>& data, const Record_Type record_type = Record_Type::data) :
+    explicit intel_hex_entry(const uint16_t address, const std::vector<uint8_t>& data, const Record_Type record_type = Record_Type::data) :
         m_address(address), m_data(data), m_record_type(record_type)
     { }
 	explicit intel_hex_entry(const std::string& entry);
@@ -42,10 +41,13 @@ public:
     uint16_t address() const;
     uint16_t end_address() const;
     Record_Type record_type() const;
-    std::vector<DataType>& data();
-	const std::vector<DataType>& const_data() const;
+    std::vector<uint8_t>& data();
+	const std::vector<uint8_t>& const_data() const;
     std::string to_string() const;
     bool is_valid() const;
+
+
+    static bool equals_without_data(const intel_hex_entry &r, const intel_hex_entry& l);
 
     static bool parse_from_string(const std::string& string, intel_hex_entry &entry);
     static bool parse_from_stream(const std::stringstream& stream, intel_hex_entry &entry);
@@ -54,7 +56,7 @@ public:
 private:
     uint16_t m_address = 0;
     Record_Type m_record_type = Record_Type(0);
-    std::vector<DataType> m_data{};
+    std::vector<uint8_t> m_data{};
     uint8_t m_checksum = 0;
     bool m_valid = false;
 

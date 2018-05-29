@@ -52,3 +52,27 @@ std::vector<uint8_t> converter::hex_to_8_array(const std::string& from)
     }
     return to;
 }
+
+uint16_t converter::make_word(uint8_t msb, uint8_t lsb)
+{
+    return (msb & 0xff) << 8 
+         | (lsb & 0xFF) << 0;
+}
+
+bool converter::make_word(const std::vector<uint8_t>& msb_vector, const  std::vector<uint8_t>& lsb_vector, std::vector<uint16_t>& word_vector)
+{
+    if (msb_vector.size() != lsb_vector.size()) 
+    {
+        word_vector.clear();
+        return false;
+    }
+    
+    word_vector.resize(msb_vector.size());
+    for (size_t i = 0; i<msb_vector.size(); i++)
+    {
+        word_vector[i] = make_word(msb_vector[i], lsb_vector[i]);
+    }
+    return true;
+}
+
+
