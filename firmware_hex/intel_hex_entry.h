@@ -47,11 +47,11 @@ public:
     bool is_valid() const;
 
 
-    static bool equals_without_data(const intel_hex_entry &r, const intel_hex_entry& l);
+    static bool equals_without_data(const intel_hex_entry & r, const intel_hex_entry & l);
 
-    static bool parse_from_string(const std::string& string, intel_hex_entry &entry);
-    static bool parse_from_stream(const std::stringstream& stream, intel_hex_entry &entry);
-    static bool compile_to_string(const intel_hex_entry &entry, std::string& string);
+    static bool parse(const std::string & string, intel_hex_entry & entry);
+    static bool parse(const std::stringstream & stream, intel_hex_entry & entry);
+    static bool to_string(const intel_hex_entry &entry, std::string& string);
 
 private:
     uint16_t m_address = 0;

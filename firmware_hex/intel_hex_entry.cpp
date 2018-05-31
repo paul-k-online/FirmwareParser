@@ -1,6 +1,6 @@
 #include "intel_hex_entry.h"
 
-bool intel_hex_entry::parse_from_string(const std::string& string, intel_hex_entry &entry)
+bool intel_hex_entry::parse(const std::string & string, intel_hex_entry & entry)
 {
     if (string[0] != record_mark)
     {
@@ -54,7 +54,8 @@ bool intel_hex_entry::parse_from_string(const std::string& string, intel_hex_ent
     return true;
 }
 
-bool intel_hex_entry::parse_from_stream(const std::stringstream& stream, intel_hex_entry &entry)
+
+bool intel_hex_entry::parse(const std::stringstream & stream, intel_hex_entry & entry)
 {
     char mark;
     //stream >> mark;
@@ -108,7 +109,7 @@ bool intel_hex_entry::parse_from_stream(const std::stringstream& stream, intel_h
     return false;
 }
 
-bool intel_hex_entry::compile_to_string(const intel_hex_entry& entry, std::string& string)
+bool intel_hex_entry::to_string(const intel_hex_entry& entry, std::string& string)
 {
     std::stringstream ss;
     ss.setf(std::ios::hex, std::ios::basefield);	//Set the stream to ouput hex instead of decimal
@@ -154,7 +155,7 @@ uint8_t intel_hex_entry::calc_checksum() const
 
 intel_hex_entry::intel_hex_entry(const std::string& entry)
 {
-    m_valid = parse_from_string(entry, *this);
+    m_valid = parse(entry, *this);
 }
 
 uint16_t intel_hex_entry::address() const
@@ -185,7 +186,7 @@ const std::vector<uint8_t>& intel_hex_entry::const_data() const
 std::string intel_hex_entry::to_string() const
 {
     std::string string;
-    const auto result = compile_to_string(*this, string);
+    const auto result = to_string(*this, string);
     if (result)
         return string;
     return "";

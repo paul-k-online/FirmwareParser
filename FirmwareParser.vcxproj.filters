@@ -1,42 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="intel_hex">
-      <UniqueIdentifier>{ba323bb9-e1ba-4198-a0e7-cbbd483f0d9e}</UniqueIdentifier>
+    <Filter Include="firmware_hex">
+      <UniqueIdentifier>{062428cc-fc28-4268-92aa-4c05e53aabba}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="intel_hex\converter.cpp">
-      <Filter>intel_hex</Filter>
-    </ClCompile>
-    <ClCompile Include="intel_hex\hex_data.cpp">
-      <Filter>intel_hex</Filter>
-    </ClCompile>
     <ClCompile Include="firmware.cpp" />
     <ClCompile Include="firmware_block.cpp" />
-    <ClCompile Include="intel_hex\intel_hex_entry.cpp">
-      <Filter>intel_hex</Filter>
-    </ClCompile>
-    <ClCompile Include="intel_hex\intel_hex_firmware.cpp">
-      <Filter>intel_hex</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="intel_hex\converter.h">
-      <Filter>intel_hex</Filter>
-    </ClInclude>
-    <ClInclude Include="intel_hex\hex_data.h">
-      <Filter>intel_hex</Filter>
-    </ClInclude>
     <ClInclude Include="firmware.h" />
     <ClInclude Include="firmware_block.h" />
-    <ClInclude Include="intel_hex\intel_hex_entry.h">
-      <Filter>intel_hex</Filter>
-    </ClInclude>
-    <ClInclude Include="intel_hex\intel_hex_firmware.h">
-      <Filter>intel_hex</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
 </Project>

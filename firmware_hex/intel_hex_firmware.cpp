@@ -1,23 +1,20 @@
 #include "intel_hex_firmware.h"
 
 
-bool intel_hex_firmware::parse_file(const std::string& filename, std::list<intel_hex_entry> &entry_list)
+bool intel_hex_firmware::parse_intelhex_file(const std::string& filename, std::list<intel_hex_entry> &entry_list)
 {
     std::ifstream file(filename.c_str());
-    if (!file.is_open())
-    {
+    if (!file.is_open()) {
         return false;
-        std::stringstream o;
-        o << "Cannot load file " << filename;
-        throw std::ios_base::failure(o.str());
+        //std::stringstream o;
+        //o << "Cannot load file " << filename;
+        //throw std::ios_base::failure(o.str());
     }
 
-    while (file)
-    {
+    while (file) {
         std::string line;
         std::getline(file, line);
-        if (!line.empty()) 
-        {
+        if (!line.empty()) {
             intel_hex_entry entry(line);
             if (!entry.is_valid())
                 return false;
@@ -28,9 +25,31 @@ bool intel_hex_firmware::parse_file(const std::string& filename, std::list<intel
 }
 
 
-bool intel_hex_firmware::to_data_map(
+bool intel_hex_firmware::join_endianness(const std::string & lsb_file, const std::string & msb_file,
+                                         std::map<uint32_t, std::vector<uint16_t>>& word_blocks)
+{
+    bool result = true;
+    
+    std::list<intel_hex_entry> entries_most;
+    if (result) {
+        result = parse_intelhex_file(msb_file, entries_most);
+    }
+    
+    std::list<intel_hex_entry> entries_least;
+    if (result) {
+        result = parse_intelhex_file(lsb_file, entries_least);
+    }
+
+    if (result) {
+        result = join_endianness(entries_least, entries_most, word_blocks);
+    }
+
+    return result;
+}
+
+bool intel_hex_firmware::join_endianness(
+    const std::list<intel_hex_entry>& lsb_entries,
     const std::list<intel_hex_entry>& msb_entries,
-    const std::list<intel_hex_entry>& lsb_entries, 
     std::map<uint32_t, std::vector<uint16_t>>& word_blocks)
 {
     auto result = std::equal(msb_entries.begin(), msb_entries.end(), 
@@ -47,32 +66,28 @@ bool intel_hex_firmware::to_data_map(
         result = to_data_map(lsb_entries, lsb_blocks);
     }
     
-    return to_data_map(msb_blocks, lsb_blocks, word_blocks);
+    return join_endianness(lsb_blocks, msb_blocks, word_blocks);
 }
 
 
-
-
-bool intel_hex_firmware::to_data_map(const std::map<uint32_t, std::vector<uint8_t>>& msb_blocks,
-    const std::map<uint32_t, std::vector<uint8_t>>& lsb_blocks,
-    std::map<uint32_t, std::vector<uint16_t>>& blocks)
+bool intel_hex_firmware::join_endianness(const std::map<uint32_t, std::vector<uint8_t>>& lsb_blocks,
+                                         const std::map<uint32_t, std::vector<uint8_t>>& msb_blocks,
+                                         std::map<uint32_t, std::vector<uint16_t>>& blocks)
 {
-    auto result = msb_blocks.size() == lsb_blocks.size();
+    auto result = lsb_blocks.size() == msb_blocks.size();
         
     if (result) {
-        auto msb_iter = msb_blocks.cbegin();
         auto lsb_iter = lsb_blocks.cbegin();
+        auto msb_iter = msb_blocks.cbegin();
 
-        while (msb_iter != msb_blocks.cend() || lsb_iter != lsb_blocks.cend())
-        {
-            if ((*msb_iter).first != (*lsb_iter).first)
-            {
+        while (lsb_iter != lsb_blocks.cend() || msb_iter != msb_blocks.cend()) {
+            if ((*lsb_iter).first != (*msb_iter).first) {
                 result = false;
                 break;
             }
 
             std::vector<uint16_t> word_vector;
-            result = converter::make_word((*msb_iter).second, (*lsb_iter).second, word_vector);
+            result = converter::make_word((*lsb_iter).second, (*msb_iter).second, word_vector);
             if (!result)
                 break;
             blocks.try_emplace((*msb_iter).first, word_vector);
@@ -85,17 +100,13 @@ bool intel_hex_firmware::to_data_map(const std::map<uint32_t, std::vector<uint8_
 }
 
 
-
-
-
 template <typename DataType>
 bool intel_hex_firmware::to_data_map(const std::list<intel_hex_entry>& entries, std::map<uint32_t, std::vector<DataType>>& blocks)
 {
     //std::map<uint32_t, std::vector<DataType>> blocks;
     uint32_t address_msw = 0;
 
-    for (const auto& entry : entries)
-    {
+    for (const auto& entry : entries) {
         switch (entry.record_type()) {
 
         case intel_hex_entry::Record_Type::extended_linear_address:
@@ -103,23 +114,19 @@ bool intel_hex_firmware::to_data_map(const std::list<intel_hex_entry>& entries, 
                 address_msw = ((entry.const_data()[0] & 0xFF << 8) | (entry.const_data()[1] & 0xFF << 0)) << 16;
             break;
 
-        case intel_hex_entry::Record_Type::data:
-        {
+        case intel_hex_entry::Record_Type::data: {
             auto find_block = false;
-            const uint32_t address = address_msw | entry.address();
+            const auto address = address_msw | entry.address();
 
-            for (auto& block : blocks)
-            {
+            for (auto& block : blocks) {
                 // start of entry is inside to an block
-                if (address >= block.first  &&  address <= block.first + block.second.size())
-                {
+                if (address >= block.first  &&  address <= block.first + block.second.size()) {
                     find_block = true;
                     join_vectors(block.second, address - block.first, entry.const_data(), uint8_t(0xff));
                     break;
                 }
                 // end of entry is inside to an block
-                if (address < block.first  &&  address + entry.const_data().size() >= block.first)
-                {
+                if (address < block.first  &&  address + entry.const_data().size() >= block.first) {
                     find_block = true;
                     join_vectors(block.second, address - block.first, entry.const_data(), uint8_t(0xff));
                     break;
@@ -136,7 +143,6 @@ bool intel_hex_firmware::to_data_map(const std::list<intel_hex_entry>& entries, 
         default: 
                 break;
         }
-
     }
     ///return blocks;
     return true;
@@ -146,15 +152,12 @@ bool intel_hex_firmware::to_data_map(const std::list<intel_hex_entry>& entries, 
 template <typename DataType>
 bool intel_hex_firmware::join_vectors(std::vector<DataType>& dest, int index, const std::vector<DataType>& src, DataType fill)
 {
-    if (index >= 0)
-    {
+    if (index >= 0) {
         auto add_size = int(src.size()) - (int(dest.size()) - index);
         if (add_size > 0)
             dest.insert(dest.end(), add_size, fill);
         std::copy(src.begin(), src.end(), dest.begin() + index);
-    }
-    else
-    {
+    } else {
         auto last = int(src.size()) + index - int(dest.size());
         if (last < 0)
             last = 0;
