@@ -19,14 +19,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="converter.cpp" />
     <ClCompile Include="firmware.cpp" />
     <ClCompile Include="firmware_block.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="hex_data.cpp" />
+    <ClCompile Include="hex_entry_intel.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="hex_firmware_ascii.h" />
+    <ClInclude Include="converter.h" />
     <ClInclude Include="firmware.h" />
     <ClInclude Include="firmware_block.h" />
-    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="hex_data.h" />
+    <ClInclude Include="hex_firmware.h" />
+    <ClInclude Include="hex_entry_intel.h" />
+    <ClInclude Include="hex_firmware_c2000.h" />
+    <ClInclude Include="hex_firmware_intel.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

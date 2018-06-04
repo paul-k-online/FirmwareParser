@@ -1,18 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="firmware_hex">
-      <UniqueIdentifier>{062428cc-fc28-4268-92aa-4c05e53aabba}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
+    <ClCompile Include="converter.cpp" />
     <ClCompile Include="firmware.cpp" />
     <ClCompile Include="firmware_block.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="hex_data.cpp" />
+    <ClCompile Include="hex_entry_intel.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="converter.h" />
     <ClInclude Include="firmware.h" />
     <ClInclude Include="firmware_block.h" />
-    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="hex_data.h" />
+    <ClInclude Include="hex_firmware.h" />
+    <ClInclude Include="hex_firmware_ascii.h" />
+    <ClInclude Include="hex_entry_intel.h" />
+    <ClInclude Include="hex_firmware_intel.h" />
+    <ClInclude Include="hex_firmware_c2000.h" />
   </ItemGroup>
 </Project>

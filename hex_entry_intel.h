@@ -7,14 +7,13 @@
 #ifndef __INTEL_HEX_ENTRY_H__
 #define __INTEL_HEX_ENTRY_H__
 
-#include <string>
-#include <utility>
-#include <vector>
 #include <cstdint>
+#include <string>
+#include <vector>
 #include "converter.h"
 
 
-class intel_hex_entry
+class hex_entry_intel
 {
     static const char record_mark = ':';
     static const int count_pos = 1;
@@ -33,10 +32,10 @@ public:
         start_linear_address = 0x05,
     };
 
-    explicit intel_hex_entry(const uint16_t address, const std::vector<uint8_t>& data, const Record_Type record_type = Record_Type::data) :
+    explicit hex_entry_intel(const uint16_t address, const std::vector<uint8_t>& data, const Record_Type record_type = Record_Type::data) :
         m_address(address), m_data(data), m_record_type(record_type)
     { }
-	explicit intel_hex_entry(const std::string& entry);
+	explicit hex_entry_intel(const std::string& entry);
 
     uint16_t address() const;
     uint16_t end_address() const;
@@ -46,12 +45,9 @@ public:
     std::string to_string() const;
     bool is_valid() const;
 
-
-    static bool equals_without_data(const intel_hex_entry & r, const intel_hex_entry & l);
-
-    static bool parse(const std::string & string, intel_hex_entry & entry);
-    static bool parse(const std::stringstream & stream, intel_hex_entry & entry);
-    static bool to_string(const intel_hex_entry &entry, std::string& string);
+    static bool equals_without_data(const hex_entry_intel & r, const hex_entry_intel & l);
+    static bool parse(const std::string & string, hex_entry_intel & entry);
+    static bool to_string(const hex_entry_intel &entry, std::string& string);
 
 private:
     uint16_t m_address = 0;
@@ -61,6 +57,7 @@ private:
     bool m_valid = false;
 
     uint8_t calc_checksum() const;
+
 };
 
 #endif // __INTEL_HEX_ENTRY_H__

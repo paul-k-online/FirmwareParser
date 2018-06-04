@@ -1,7 +1,5 @@
 #include "converter.h"
 
-
-
 uint64_t converter::hex_to_64(const std::string& s)
 {
     std::stringstream o;
@@ -34,7 +32,6 @@ uint64_t converter::hex_to_64(const std::string& s)
 //    to.clear();
 //
 //    auto first = true;
-//
 //    for (auto& i : from)
 //    {
 //        unsigned bin = 0;
@@ -58,6 +55,25 @@ uint16_t converter::make_word(uint8_t lsb, uint8_t msb)
     return lsb | msb << 8;
 }
 
+uint32_t converter::make_dword(uint16_t lsw, uint16_t msw)
+{
+    return  lsw | msw << 16;
+}
+
+void converter::split_word(uint16_t word, uint8_t& lsb, uint8_t& msb)
+{
+    lsb = uint8_t(word >> 0);
+    msb = uint8_t(word >> 8);
+}
+
+void converter::split_dword(uint32_t dword, uint16_t& lsw, uint16_t& msw)
+{
+    lsw = uint16_t(dword >> 0);
+    msw = uint16_t(dword >> 16);
+}
+
+
+
 bool converter::make_word(const std::vector<uint8_t>& lsb_vector, const std::vector<uint8_t>& msb_vector, std::vector<uint16_t>& word_vector)
 {
     if (lsb_vector.size() != msb_vector.size()) 
@@ -74,4 +90,14 @@ bool converter::make_word(const std::vector<uint8_t>& lsb_vector, const std::vec
     return true;
 }
 
+
+
+
+
+template <typename T>
+std::ostream& operator<< (std::ostream& os, const std::vector<T>& vec)
+{
+    std::copy(vec.begin(), vec.end(), std::ostream_iterator<T>(os));
+    return os;
+}
 

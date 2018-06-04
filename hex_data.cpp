@@ -4,7 +4,7 @@
 
 
 #include "hex_data.h"
-#include "intel_hex_entry.h"
+#include "hex_entry_intel.h"
 
 
 namespace IntelHex
@@ -330,12 +330,12 @@ namespace IntelHex
 
 			auto length = buffer[0];
 			address_type address = (buffer[1] << 8) | buffer[2];
-			const auto type = static_cast<intel_hex_entry::Record_Type>(buffer[3]);
+			const auto type = static_cast<hex_entry_intel::Record_Type>(buffer[3]);
 			auto data = &buffer[4];
 
 			switch (type)
 			{
-			case intel_hex_entry::Record_Type::data:
+			case hex_entry_intel::Record_Type::data:
 			{
 				address += linear_address;
 				for (auto& block : blocks) // Find a block that includes address
@@ -373,14 +373,14 @@ namespace IntelHex
 				break;
 			}
 				
-			case intel_hex_entry::Record_Type::eof: 	// Ignore
+			case hex_entry_intel::Record_Type::eof: 	// Ignore
 				break;
 
-			case intel_hex_entry::Record_Type::extended_segment_address:
+			case hex_entry_intel::Record_Type::extended_segment_address:
 				segment_addr_rec = true;
 				break;
 			
-			case intel_hex_entry::Record_Type::extended_linear_address:
+			case hex_entry_intel::Record_Type::extended_linear_address:
 				if (0 == address && 2 == length)
 				{
 					linear_address = ((buffer[4] << 8) | buffer[5]) << 16;
@@ -433,7 +433,7 @@ namespace IntelHex
 		{
 			for (auto& block : blocks)
 			{
-				if (block.first > 0xFFFF)	//Check the upper 16 bits
+				if (block.first > uint16_t(0xFFFF))	//Check the upper 16 bits
 				{
 					linear_addr_rec = true;
 					os << NEW_SEGMENT << INH32M_HEADER_END << std::endl;
