@@ -1,6 +1,92 @@
 #include "converter.h"
 
-converter::endianness converter::c2000 = converter(endianness::little, endianness::big);
+converter converter::little_order = converter(endianness::little);
+converter converter::big_order = converter(endianness::big);
+converter converter::middle_order = converter(endianness::middle);
+
+
+bool converter::need_swap_bytes(endianness e1, endianness e2)
+{
+    if (e1 == endianness::unknown || e2 == endianness::unknown || e1 == e2)
+        return false;
+
+    if ((e1 == endianness::little && e2 == endianness::middle) ||
+        (e1 == endianness::middle && e2 == endianness::little))
+        return false;
+
+    return true;
+}
+
+bool converter::need_swap_words(endianness e1, endianness e2)
+{
+    if (e1 == endianness::unknown || e2 == endianness::unknown || e1 == e2)
+        return false;
+
+    if ((e1 == endianness::big && e2 == endianness::middle) ||
+        (e1 == endianness::middle && e2 == endianness::big))
+        return false;
+
+    return true;
+}
+
+converter::converter(const endianness order)
+{
+    m_endian = order;
+    m_local_endian = get_local_endian();
+    m_swap_bytes = need_swap_bytes(m_endian, m_local_endian);
+    m_swap_words = need_swap_words(m_endian, m_local_endian);
+
+}
+
+uint16_t converter::swap(uint16_t x)
+{
+    x = ((x & 0xFF) << 8) | ((x & 0xFF00) >> 8);
+    return x;
+}
+
+uint32_t converter::swap(uint32_t x)
+{
+    x = ((x & 0xFFFF) << 16) | ((x & 0xFFFF0000) >> 16);
+    return x;
+}
+
+uint8_t converter::hi_byte(uint16_t word)
+{
+    return word & 0xFF00 >> 8;
+}
+
+uint8_t converter::lo_byte(uint16_t word)
+{
+    return word & 0xFF;
+}
+
+uint16_t converter::hi_word(uint32_t word)
+{
+    return word & 0xFFFF0000 >> 16;
+}
+
+uint16_t converter::lo_word(uint32_t word)
+{
+    return word & 0xFFFF;
+}
+
+
+void converter::from_local(uint16_t& in)
+{
+    if (need_swap_bytes(m_local_endian, m_endian))
+        in = swap(in);
+}
+
+void converter::to_local(uint16_t &in)
+{
+    auto endian = get_local_endian();
+    if (m_endian == get_local_endian() || m_endian == endianness::unknown)
+        return;
+    
+    in = swap(in);
+}
+
+
 
 uint64_t converter::hex_to_64(const std::string& s)
 {
@@ -53,15 +139,13 @@ uint64_t converter::hex_to_64(const std::string& s)
 //}
 
 
+
+
 uint16_t converter::make_word(uint8_t lsb, uint8_t msb)
 {
     return lsb | msb << 8;
 }
 
-uint16_t converter::make_word(uint8_t arr[])
-{
-    
-}
 
 uint32_t converter::make_dword(uint16_t lsw, uint16_t msw)
 {
