@@ -40,24 +40,21 @@ public:
 
 
 
-    explicit converter(const endianness order);
+    explicit converter(endianness order);
 
     static converter little_order;
     static converter big_order;
     static converter middle_order;
 
-    static uint16_t swap(uint16_t x);
-    static uint32_t swap(uint32_t x);
+    static uint16_t swap_bytes(uint16_t x);
+    static uint32_t swap_words(uint32_t x);
     static uint8_t hi_byte(uint16_t word);
     static uint8_t lo_byte(uint16_t word);
     static uint16_t hi_word(uint32_t word);
     static uint16_t lo_word(uint32_t word);
 
-    void from_local(uint16_t &in);
-    void to_local(uint16_t &in);
-
-    void from_local(uint32_t &in);
-    void to_local(uint32_t &in);
+    uint16_t swap(uint16_t &in) const;
+    uint32_t swap(uint32_t &in) const;
 
     static uint64_t hex_to_64(const std::string&);
     //static bool hex_to_bin(char ch, unsigned& val);

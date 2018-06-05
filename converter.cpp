@@ -29,7 +29,7 @@ bool converter::need_swap_words(endianness e1, endianness e2)
     return true;
 }
 
-converter::converter(const endianness order)
+converter::converter(endianness order)
 {
     m_endian = order;
     m_local_endian = get_local_endian();
@@ -38,13 +38,13 @@ converter::converter(const endianness order)
 
 }
 
-uint16_t converter::swap(uint16_t x)
+uint16_t converter::swap_bytes(uint16_t x)
 {
     x = ((x & 0xFF) << 8) | ((x & 0xFF00) >> 8);
     return x;
 }
 
-uint32_t converter::swap(uint32_t x)
+uint32_t converter::swap_words(uint32_t x)
 {
     x = ((x & 0xFFFF) << 16) | ((x & 0xFFFF0000) >> 16);
     return x;
@@ -70,20 +70,21 @@ uint16_t converter::lo_word(uint32_t word)
     return word & 0xFFFF;
 }
 
-
-void converter::from_local(uint16_t& in)
+uint16_t converter::swap(uint16_t& in) const
 {
-    if (need_swap_bytes(m_local_endian, m_endian))
-        in = swap(in);
+    if (m_swap_bytes)
+        in = swap_bytes(in);
+    return in;
 }
 
-void converter::to_local(uint16_t &in)
+uint32_t converter::swap(uint32_t& in) const
 {
-    auto endian = get_local_endian();
-    if (m_endian == get_local_endian() || m_endian == endianness::unknown)
-        return;
-    
-    in = swap(in);
+    if (m_swap_words)
+        in = swap_words(in);
+    const auto arr = reinterpret_cast<uint16_t*>(&in);
+    swap(arr[0]);
+    swap(arr[1]);
+    return in;
 }
 
 
