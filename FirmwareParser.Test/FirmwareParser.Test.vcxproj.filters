@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="hex_data_Test.cpp" />
+    <ClCompile Include="vector_Test.cpp" />
+    <ClCompile Include="hex_ascii_Test.cpp" />
+    <ClCompile Include="hex_intel_Test.cpp" />
+    <ClCompile Include="converter_Test.cpp" />
+  </ItemGroup>
+</Project>
