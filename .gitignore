@@ -367,3 +367,5 @@ OpenCover/
 
 # Azure Stream Analytics local run output 
 ASALocalRun/
+/FirmwareParser.CatchTest
+/FirmwareParser.Data/other
