@@ -16,38 +16,37 @@ public:
 
     bool load_ascii(const std::string& filename)
     {
-        
+        return false;
     }
 
 
     bool load_intel_width8(const std::string& filename1, const std::string& filename2)
     {
-        auto result = true;;
-        hex_firmware_intel<uint8_t> i1;
-        if (result)
-            result = i1.load(filename1);
+        auto result = true;
+        hex_firmware_intel<uint8_t> fw1;
+        if (result) {
+            result = fw1.load(filename1);
+        }
 
-        hex_firmware_intel<uint8_t> i2;
-        if (result)
-            result = i2.load(filename2);
+        hex_firmware_intel<uint8_t> fw2;
+        if (result) {
+            result = fw2.load(filename2);
+        }
 
         if (result) { // equals by size and type
-            result = std::equal(i1.const_entry_list().cbegin(), i1.const_entry_list().cend(),
-                i2.const_entry_list().cbegin(), i2.const_entry_list().cend(),
-                hex_entry_intel::equals_without_data);
-                                
-                                
             //result = std::equal(i1.const_data().cbegin(), i1.const_data().cend(), 
             //                    i2.const_data().cbegin(), i2.const_data().cend(), 
             //                    [](std::pair<uint32_t, std::vector<uint8_t>> a, std::pair<uint32_t, std::vector<uint8_t>> b)
             //                    {
             //                        return a.first == b.first && a.second.size() == b.second.size();
-            //                    });
-
-
+            //                    });            result = std::equal(i1.const_entry_list().cbegin(), i1.const_entry_list().cend(),
+            result = std::equal(fw2.entry_list().cbegin(), fw2.entry_list().cend(), hex_entry_intel::equals_without_data);
         }
+        
         if (result) {
-            join_endianness(i1.const_data(), i2.const_data(), m_data);
+            //TODO:
+            //auto fw_data1 = fw1.const_data_map();
+            //join_endianness(fw1.data_map(), fw2.data_map(), m_data_map);
         }
         m_load_valid = result;
         return m_load_valid;
@@ -55,12 +54,12 @@ public:
 
     bool load_intel_width16(const std::string& filename)
     {
-        auto result = true;
-        hex_firmware_intel<uint16_t> i1;
-        if (result)
-            result = i1.load(filename);
-        if (result)
-            m_data = i1.const_data();
+        hex_firmware_intel<uint16_t> fw;
+        auto result = fw.load(filename);
+        if (result) {
+            //TODO:
+            //m_data_map = (fw.data_map());
+        }
         return result;
     }
 };

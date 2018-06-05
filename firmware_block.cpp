@@ -35,7 +35,7 @@
  * ************************************************************************* */
 Firmware_block::Firmware_block( const std::vector<uint8_t>& data )
     : m_address(0),
-      m_data(0)
+      m_data_map(0)
 {
     uint32_t size = 0;
 
@@ -45,10 +45,10 @@ Firmware_block::Firmware_block( const std::vector<uint8_t>& data )
 
     if ((size != 0) && ((size + 6) <= data.size())) {
         m_address = make_address(&data[2]);
-        m_data.resize(size);
+        m_data_map.resize(size);
 
         for (uint32_t i = 0; i < size; i++) {
-            m_data[i] = data[6 + i];
+            m_data_map[i] = data[6 + i];
         }
     }
 }
@@ -66,13 +66,13 @@ Firmware_block::Firmware_block( const std::vector<uint8_t>& data )
  * ************************************************************************* */
 Firmware_block::Firmware_block( uint32_t size, uint32_t address )
     : m_address(address),
-      m_data(0)
+      m_data_map(0)
 {
-    m_data.assign(size, 0xFF);
+    m_data_map.assign(size, 0xFF);
 }
 
 Firmware_block::Firmware_block(uint32_t address, const std::vector<uint8_t>& data)
-    : m_address(address), m_data(data)
+    : m_address(address), m_data_map(data)
 {
 }
 
@@ -86,7 +86,7 @@ Firmware_block::Firmware_block(uint32_t address, const std::vector<uint8_t>& dat
  * ************************************************************************* */
 bool Firmware_block::is_empty( void ) const
 {
-    return m_data.empty();
+    return m_data_map.empty();
 }
 
 /** ************************************************************************
@@ -98,7 +98,7 @@ bool Firmware_block::is_empty( void ) const
  * ************************************************************************* */
 uint32_t Firmware_block::size( void ) const
 {
-    return m_data.size();
+    return m_data_map.size();
 }
 
 /** ************************************************************************
@@ -110,7 +110,7 @@ uint32_t Firmware_block::size( void ) const
  * ************************************************************************* */
 uint32_t Firmware_block::raw_size( void ) const
 {
-    uint32_t size = m_data.size();
+    uint32_t size = m_data_map.size();
     return (size > 0) ? (size + 6) : (2);
 }
 
@@ -128,7 +128,7 @@ uint32_t Firmware_block::address( void ) const
 
 uint32_t Firmware_block::back_address() const
 {
-    return m_address + m_data.size();
+    return m_address + m_data_map.size();
 }
 
 /** ************************************************************************
@@ -140,7 +140,7 @@ uint32_t Firmware_block::back_address() const
  * ************************************************************************* */
 std::vector<uint8_t>& Firmware_block::data( void )
 {
-    return m_data;
+    return m_data_map;
 }
 
 /** ************************************************************************
@@ -152,7 +152,7 @@ std::vector<uint8_t>& Firmware_block::data( void )
  * ************************************************************************* */
 const std::vector<uint8_t>& Firmware_block::const_data( void ) const
 {
-    return m_data;
+    return m_data_map;
 }
 
 /** ************************************************************************
@@ -169,7 +169,7 @@ const std::vector<uint8_t>& Firmware_block::const_data( void ) const
 bool operator==( const Firmware_block& lhs, const Firmware_block& rhs )
 {
     return (lhs.m_address == rhs.m_address)
-            && (lhs.m_data == rhs.m_data);
+            && (lhs.m_data_map == rhs.m_data_map);
 }
 
 

@@ -49,7 +49,7 @@ private:
     static uint32_t make_address(const uint8_t* array );
 
     uint32_t m_address;                 ///< Address of block in FLASH memory
-    std::vector<uint8_t> m_data;        ///< Block data
+    std::vector<uint8_t> m_data_map;        ///< Block data
 };
 
 #endif   /* #ifndef __FIRMWARE_BLOCK_H__ */

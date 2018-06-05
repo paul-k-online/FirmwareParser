@@ -17,11 +17,11 @@ bool hex_entry_intel::parse(const std::string & string, hex_entry_intel & entry)
         return false; // "length provided != length of data | "  << static_cast<size_t>(count) << " != " << (string.length() - (9 + 2 + 1));
     }
 
-    entry.m_data.reserve(count);
-    entry.m_data.clear();
+    entry.m_data_map.reserve(count);
+    entry.m_data_map.clear();
     for (size_t i = 0; i < count; ++i) {
         auto v = converter::hex_to_64(string.substr(offset + i * type_length, 2));
-        entry.m_data.emplace_back(v);
+        entry.m_data_map.emplace_back(v);
     }
 
     entry.m_checksum = converter::hex_to_64(string.substr(offset + count * type_length, 2));
@@ -44,7 +44,7 @@ bool hex_entry_intel::to_string(const hex_entry_intel& entry, std::string& strin
     
     ss << record_mark;
     ss.width(2);
-    ss << unsigned(entry.m_data.size() & 0xFF);
+    ss << unsigned(entry.m_data_map.size() & 0xFF);
     ss.width(4);
     ss << unsigned(entry.m_address & 0xFFFF);
     ss.width(2);
@@ -52,7 +52,7 @@ bool hex_entry_intel::to_string(const hex_entry_intel& entry, std::string& strin
 
     if(entry.m_record_type == Record_Type::data)
     {
-        for (const auto& data : entry.m_data)
+        for (const auto& data : entry.m_data_map)
         {
             ss.width(2);
             ss << unsigned(data);
@@ -71,9 +71,9 @@ uint8_t hex_entry_intel::calc_checksum() const
     uint8_t lsb_address;
     converter::split_word(m_address, lsb_address, msb_address);
 
-    const auto size = static_cast<uint8_t>(m_data.size());
+    const auto size = static_cast<uint8_t>(m_data_map.size());
     uint8_t checksum = size + msb_address + lsb_address + static_cast<uint8_t>(m_record_type);
-    for (auto i:m_data) 
+    for (auto i:m_data_map) 
     {
         checksum += i;
     }
@@ -93,7 +93,7 @@ uint16_t hex_entry_intel::address() const
 
 uint16_t hex_entry_intel::end_address() const
 {
-	return m_address + m_data.size();
+	return m_address + m_data_map.size();
 }
 
 hex_entry_intel::Record_Type hex_entry_intel::record_type() const
@@ -103,12 +103,12 @@ hex_entry_intel::Record_Type hex_entry_intel::record_type() const
 
 std::vector<uint8_t>& hex_entry_intel::data()
 {
-    return m_data;
+    return m_data_map;
 }
 
 const std::vector<uint8_t>& hex_entry_intel::const_data() const
 {
-	return m_data;
+	return m_data_map;
 }
 
 std::string hex_entry_intel::to_string() const
@@ -129,5 +129,5 @@ bool hex_entry_intel::equals_without_data(const hex_entry_intel& r, const hex_en
 {
     return r.m_address == l.m_address
         && r.m_record_type == l.m_record_type
-        && r.m_data.size() == l.m_data.size();
+        && r.m_data_map.size() == l.m_data_map.size();
 }

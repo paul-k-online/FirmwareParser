@@ -33,7 +33,7 @@ public:
     };
 
     explicit hex_entry_intel(const uint16_t address, const std::vector<uint8_t>& data, const Record_Type record_type = Record_Type::data) :
-        m_address(address), m_data(data), m_record_type(record_type)
+        m_address(address), m_data_map(data), m_record_type(record_type)
     { }
 	explicit hex_entry_intel(const std::string& entry);
 
@@ -52,7 +52,7 @@ public:
 private:
     uint16_t m_address = 0;
     Record_Type m_record_type = Record_Type(0);
-    std::vector<uint8_t> m_data{};
+    std::vector<uint8_t> m_data_map{};
     uint8_t m_checksum = 0;
     bool m_valid = false;
 
