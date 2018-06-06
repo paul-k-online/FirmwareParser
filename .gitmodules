@@ -1,0 +1,6 @@
+[submodule "gsl-lite"]
+	path = contrib/gsl-lite
+	url = https://github.com/martinmoene/gsl-lite
+[submodule "catch2"]
+	path = contrib/Catch2
+	url = https://github.com/catchorg/Catch2.git
