@@ -12,10 +12,10 @@
     <ClInclude Include="firmware.h" />
     <ClInclude Include="firmware_block.h" />
     <ClInclude Include="hex_data.h" />
+    <ClInclude Include="hex_entry_intel.h" />
     <ClInclude Include="hex_firmware.h" />
     <ClInclude Include="hex_firmware_ascii.h" />
-    <ClInclude Include="hex_entry_intel.h" />
-    <ClInclude Include="hex_firmware_intel.h" />
     <ClInclude Include="hex_firmware_c2000.h" />
+    <ClInclude Include="hex_firmware_intel.h" />
   </ItemGroup>
 </Project>

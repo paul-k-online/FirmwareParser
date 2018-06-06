@@ -12,7 +12,7 @@ template <typename DataType>
 class hex_firmware_ascii : public hex_firmware<DataType>
 {
     uint16_t m_singature = 0;
-    uint16_t m_reserved[8];
+    uint16_t m_reserved[8] {};
 
 public:
     static const char STX = 0x02; //"\x02"
@@ -108,9 +108,10 @@ bool hex_firmware_ascii<DataType>::load(const std::vector<uint8_t>& bytes)
         const auto data_block_size = length * data_size;
         if (iter + data_block_size >= bytes.end())
             break;
-        std::vector<uint8_t> in(iter, iter + data_block_size);
+        const std::vector<uint8_t> in(iter, iter + data_block_size);
         std::vector<DataType> out;
-        if (!converter::convert_vector<DataType>(in, out))
+
+        if (!converter::middle_order.convert_vector<DataType>(in, out))
             break;
         m_data_map.try_emplace(address, out);
 

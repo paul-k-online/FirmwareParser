@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2043
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FirmwareParser", "FirmwareParser\FirmwareParser.vcxproj", "{0007D1B2-33EA-4F48-A8F9-1915E02A9C9D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FirmwareParser", "src\FirmwareParser.vcxproj", "{0007D1B2-33EA-4F48-A8F9-1915E02A9C9D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FirmwareParser.Test", "FirmwareParser.Test\FirmwareParser.Test.vcxproj", "{8944003D-7280-4067-809F-322918B35373}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FirmwareParser.Test", "test\FirmwareParser.Test.vcxproj", "{8944003D-7280-4067-809F-322918B35373}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

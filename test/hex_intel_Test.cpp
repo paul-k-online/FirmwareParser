@@ -5,10 +5,10 @@
 #include <list>
 #include <map>
 
-#include "../FirmwareParser/hex_firmware.h"
-#include "../FirmwareParser/hex_firmware_intel.h"
-#include "../FirmwareParser/hex_entry_intel.h"
-#include "../FirmwareParser/firmware.h"
+#include "../src/hex_firmware.h"
+#include "../src/hex_firmware_intel.h"
+#include "../src/hex_entry_intel.h"
+#include "../src/firmware.h"
 
 
 //#define WINDOWS

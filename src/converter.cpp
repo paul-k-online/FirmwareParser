@@ -1,9 +1,23 @@
 #include "converter.h"
+#include <algorithm>
 
 converter converter::little_order = converter(endianness::little);
 converter converter::big_order = converter(endianness::big);
 converter converter::middle_order = converter(endianness::middle);
 
+
+converter::endianness converter::get_local_endian()
+{
+    static uint32_t x = 0x11223344;
+    const auto x1 = *reinterpret_cast<uint8_t*>(&x); // who 1st byte in array x
+    switch (x1)
+    {
+        case 0x44: return endianness::little;
+        case 0x11: return endianness::big;
+        case 0x22: return endianness::middle;
+        default: return endianness::unknown;
+    }
+}
 
 bool converter::need_swap_bytes(endianness e1, endianness e2)
 {
@@ -140,6 +154,10 @@ uint64_t converter::hex_to_64(const std::string& s)
 //}
 
 
+//uint16_t converter::make_word(std::span<uint8_t,2>& arr)
+//{
+//    return uint16_t(*static_cast<uint16_t*>(arr));
+//}
 
 
 uint16_t converter::make_word(uint8_t lsb, uint8_t msb)
@@ -188,6 +206,7 @@ bool converter::make_word(const std::vector<uint8_t>& lsb_vector, const std::vec
 template <typename DataType>
 bool converter::convert_vector(const std::vector<uint8_t>& in, std::vector<DataType>& out)
 {
+    throw;
     return false;
 }
 
@@ -202,7 +221,10 @@ bool converter::convert_vector<uint16_t>(const std::vector<uint8_t>& in, std::ve
         out.reserve(in.size() / data_size);
         auto iter = in.begin();
         while (iter != in.end()) {
-            const auto o = converter::make_word(*iter++, *iter++);
+            auto o = converter::make_word(*iter++, *iter++);
+
+
+            auto o16 = converter::swap(o);
             out.push_back(o);
         }
     }
@@ -229,11 +251,3 @@ bool converter::convert_vector<uint32_t>(const std::vector<uint8_t>& in, std::ve
     }
     return result;
 }
-
-template <typename T>
-std::ostream& operator<< (std::ostream& os, const std::vector<T>& vec)
-{
-    std::copy(vec.begin(), vec.end(), std::ostream_iterator<T>(os));
-    return os;
-}
-

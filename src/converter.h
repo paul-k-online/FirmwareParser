@@ -24,17 +24,7 @@ protected:
 
 
 public:
-    static endianness get_local_endian() {
-        static const uint32_t x = 0x11223344;
-        auto xx = *(unsigned char *)&x;
-        switch (xx)
-        {
-        case 0x44: return endianness::little;
-        case 0x11: return endianness::big;
-        case 0x22: return endianness::middle;
-        default: return endianness::unknown;
-        }
-    }
+    static endianness get_local_endian();
     static bool need_swap_bytes(endianness e1, endianness e2);
     static bool need_swap_words(endianness e1, endianness e2);
 
@@ -60,8 +50,8 @@ public:
     //static bool hex_to_bin(char ch, unsigned& val);
     //static std::vector<uint8_t> hex_to_8_array(const std::string&);
     
-    uint16_t make_word(const uint8_t arr[2]);
     static uint32_t make_dword(uint16_t lsw, uint16_t msw);
+    //static uint16_t make_word(const <unknown>& arr);
     static uint16_t make_word(uint8_t lsb, uint8_t msb);
 
     static void split_word(uint16_t word, uint8_t& lsb, uint8_t& msb);
@@ -70,16 +60,7 @@ public:
     static bool make_word(const std::vector<uint8_t>& lsb_vector, const  std::vector<uint8_t>& msb_vector, std::vector<uint16_t>& word_vector);
 
     template<typename DataType>
-    static bool convert_vector(const std::vector<uint8_t> & in, std::vector<DataType>& out);
+    bool convert_vector(const std::vector<uint8_t> & in, std::vector<DataType>& out);
 
 
 };
-
-
-template <typename T>
-std::ostream& operator<< (std::ostream& os, const std::vector<T>& vec);
-
-
-
-
-

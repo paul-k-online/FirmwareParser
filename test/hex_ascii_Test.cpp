@@ -1,9 +1,9 @@
 #include <CppUnitTest.h>
-#include "../FirmwareParser/hex_firmware_ascii.h"
+#include "../src/hex_firmware_ascii.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-#define ASCII_SCI8      R"(..\..\FirmwareParser.Data\Blinker --ascii --boot --sci8.hex)"
+#define ASCII_SCI8      R"(..\..\data\Blinker --ascii --boot --sci8.hex)"
 
 namespace FirmwareParser_Test
 {
