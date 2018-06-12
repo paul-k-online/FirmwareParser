@@ -24,7 +24,7 @@ protected:
     std::vector<uint8_t> m_bytes;
 public:
     bool read(const std::string & filename);
-    bool load(const std::vector<uint8_t> & bytes);
+    bool load(gsl::span<uint8_t> bytes);
     bool load(const std::string & filename) override;
     bool save(const std::string & filename) override;
 };
@@ -71,7 +71,7 @@ bool hex_firmware_ascii<DataType>::read(const std::string & filename)
 }
 
 template<typename DataType>
-bool hex_firmware_ascii<DataType>::load(const std::vector<uint8_t>& bytes)
+bool hex_firmware_ascii<DataType>::load(gsl::span<uint8_t> bytes)
 {
     if (bytes.empty())
         return false;
@@ -79,34 +79,40 @@ bool hex_firmware_ascii<DataType>::load(const std::vector<uint8_t>& bytes)
     
     auto iter = bytes.begin();
     m_singature = converter::make_word(*iter++, *iter++);
+
     for (auto i = 0; i < sizeof(m_reserved)/sizeof(m_reserved[0]); i++) {
         m_reserved[i] = converter::make_word(*iter++, *iter++);
     }
     
-
     auto read_block = true;
     while (read_block)
     {
         read_block = false;
-        
+
+        if (std::distance(iter, bytes.end()) < 4)
+            break;
         // read address
-        const auto address_msw = converter::make_word(*iter++, *iter++);
-        if (iter == bytes.end())
-            break;
-        const auto address_lsw = converter::make_word(*iter++, *iter++);
-        if (iter == bytes.end())
-            break;
-        const auto address = converter::make_dword(address_lsw, address_msw);
+        //const auto address_msw = converter::make_word(*iter++, *iter++);
+        //const auto address_lsw = converter::make_word(*iter++, *iter++);
+        //if (iter == bytes.end())
+        //    break;
+        //const auto address = converter::make_dword(address_lsw, address_msw);
+        uint32_t address;
+        auto res = converter::middle_order.read_dword(gsl::span<uint8_t>(iter,4), address);
+        iter += 4;
 
         // read length data
-        const auto length = converter::make_word(*iter++, *iter++);
+        //const auto length = converter::make_word(*iter++, *iter++);
+        uint16_t length;
+        converter::read_word(iter, length);
         if (length == 0 || iter == bytes.end())
             break;
 
         // read data
         const auto data_size = sizeof DataType;
         const auto data_block_size = length * data_size;
-        if (iter + data_block_size >= bytes.end())
+        
+        if (data_block_size >= std::distance(iter, bytes.end()))
             break;
         const std::vector<uint8_t> in(iter, iter + data_block_size);
         std::vector<DataType> out;

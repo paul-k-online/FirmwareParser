@@ -9,6 +9,18 @@ namespace FirmwareParser_Test
     TEST_CLASS(converter_Test)
     {
     public:
+        TEST_METHOD(Test_read_dword)
+        {
+            std::vector<uint8_t> v{ 0x0, 0x0, 0x1, 0x2, 0x3, 0x4, 0x0, 0x0 , 0xEE};
+            const auto iter = v.begin() + 2;
+
+            uint32_t out;
+            auto result = converter::big_order.read_dword(gsl::span<uint8_t>(iter._Ptr, 4), out);
+            
+            Assert::AreEqual(unsigned(0x01020304), unsigned(out));
+
+        }
+
         TEST_METHOD(Test_local_endianness)
         {
             Assert::AreEqual(unsigned(converter::get_local_endian()), unsigned(converter::endianness::little));
@@ -28,7 +40,6 @@ namespace FirmwareParser_Test
             Assert::AreEqual(unsigned(a2), unsigned(converter::swap_words(a1)));
             Assert::AreEqual(unsigned(a1), unsigned(converter::swap_words(converter::swap_words(a1))));
         }
-
 
         TEST_METHOD(Test_endian_swap)
         {
@@ -66,12 +77,16 @@ namespace FirmwareParser_Test
             memcpy(&mid1, mid_arr1, 2);
         }
 
-        
-        TEST_METHOD(Test_swap)
+        TEST_METHOD(Test_convert_vector)
         {
+            std::vector<uint8_t> v{ 0xA, 0xB, 0xC, 0xD,  0x1, 0x2, 0x3, 0x4,  };
+            std::vector<uint16_t> vo;
 
-            uint8_t bytes[] = { 0x00, 0x3F, 0x7F, 0xF7 };
-            uint32_t address = 0x003F7FF7;
+            const auto res = converter::big_order.convert_vector(v, vo);
+
+            Assert::IsTrue(res);
+            Assert::AreEqual(unsigned(0x0A0BU), unsigned(vo[0]));
+            Assert::AreEqual(unsigned(0x0102U), unsigned(vo[2]));
         }
 
     };

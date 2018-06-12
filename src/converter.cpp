@@ -19,86 +19,39 @@ converter::endianness converter::get_local_endian()
     }
 }
 
-bool converter::need_swap_bytes(endianness e1, endianness e2)
+
+bool converter::need_swap_bytes(endianness from, endianness to)
 {
-    if (e1 == endianness::unknown || e2 == endianness::unknown || e1 == e2)
+    if (from == endianness::unknown || to == endianness::unknown || from == to)
         return false;
 
-    if ((e1 == endianness::little && e2 == endianness::middle) ||
-        (e1 == endianness::middle && e2 == endianness::little))
+    if ((from == endianness::little && to == endianness::middle) ||
+        (from == endianness::middle && to == endianness::little))
         return false;
 
     return true;
 }
 
-bool converter::need_swap_words(endianness e1, endianness e2)
+
+bool converter::need_swap_words(endianness from, endianness to)
 {
-    if (e1 == endianness::unknown || e2 == endianness::unknown || e1 == e2)
+    if (from == endianness::unknown || to == endianness::unknown || from == to)
         return false;
 
-    if ((e1 == endianness::big && e2 == endianness::middle) ||
-        (e1 == endianness::middle && e2 == endianness::big))
+    if ((from == endianness::big && to == endianness::middle) ||
+        (from == endianness::middle && to == endianness::big))
         return false;
 
     return true;
 }
 
-converter::converter(endianness order)
+
+converter::converter(const endianness order) 
+    : m_endian(order)
 {
-    m_endian = order;
     m_local_endian = get_local_endian();
     m_swap_bytes = need_swap_bytes(m_endian, m_local_endian);
     m_swap_words = need_swap_words(m_endian, m_local_endian);
-
-}
-
-uint16_t converter::swap_bytes(uint16_t x)
-{
-    x = ((x & 0xFF) << 8) | ((x & 0xFF00) >> 8);
-    return x;
-}
-
-uint32_t converter::swap_words(uint32_t x)
-{
-    x = ((x & 0xFFFF) << 16) | ((x & 0xFFFF0000) >> 16);
-    return x;
-}
-
-uint8_t converter::hi_byte(uint16_t word)
-{
-    return word & 0xFF00 >> 8;
-}
-
-uint8_t converter::lo_byte(uint16_t word)
-{
-    return word & 0xFF;
-}
-
-uint16_t converter::hi_word(uint32_t word)
-{
-    return word & 0xFFFF0000 >> 16;
-}
-
-uint16_t converter::lo_word(uint32_t word)
-{
-    return word & 0xFFFF;
-}
-
-uint16_t converter::swap(uint16_t& in) const
-{
-    if (m_swap_bytes)
-        in = swap_bytes(in);
-    return in;
-}
-
-uint32_t converter::swap(uint32_t& in) const
-{
-    if (m_swap_words)
-        in = swap_words(in);
-    const auto arr = reinterpret_cast<uint16_t*>(&in);
-    swap(arr[0]);
-    swap(arr[1]);
-    return in;
 }
 
 
@@ -110,6 +63,84 @@ uint64_t converter::hex_to_64(const std::string& s)
     uint64_t v;
     o >> v;
     return v;
+}
+
+uint8_t converter::lo_byte(const uint16_t word)
+{
+    return word & 0xFF;
+}
+
+uint8_t converter::hi_byte(const uint16_t word)
+{
+    return word & 0xFF00 >> 8;
+}
+
+uint16_t converter::lo_word(const uint32_t word)
+{
+    return word & 0xFFFF;
+}
+
+uint16_t converter::hi_word(const uint32_t word)
+{
+    return word & 0xFFFF0000 >> 16;
+}
+
+void converter::split_word(uint16_t word, uint8_t& low, uint8_t& high)
+{
+    low = lo_byte(word);
+    high = hi_byte(word);
+}
+
+void converter::split_dword(uint32_t dword, uint16_t & low, uint16_t& high)
+{
+    low = lo_word(dword);
+    high = hi_word(dword);
+}
+
+uint16_t converter::make_word(uint8_t low, uint8_t high)
+{
+    return low | high << 8;
+}
+
+uint32_t converter::make_dword(uint16_t low_byte, uint16_t high_byte)
+{
+    return low_byte | high_byte << 16;
+}
+
+uint16_t converter::swap_bytes(uint16_t x)
+{
+    //x = ((x & 0xFF) << 8) | ((x & 0xFF00) >> 8);
+    const auto ptr = reinterpret_cast<uint8_t*>(&x);
+    std::swap(ptr[0], ptr[1]);
+    return x;
+}
+
+uint32_t converter::swap_words(uint32_t x)
+{
+    //x = ((x & 0xFFFF) << 16) | ((x & 0xFFFF0000) >> 16);
+    const auto ptr = reinterpret_cast<uint16_t*>(&x);
+    std::swap(ptr[0], ptr[1]);
+    return x;
+}
+
+
+
+uint16_t converter::swap(uint16_t & in) const
+{
+    if (m_swap_bytes)
+        in = swap_bytes(in);
+    return in;
+}
+
+
+uint32_t converter::swap(uint32_t & in) const
+{
+    if (m_swap_words)
+        in = swap_words(in);
+    const auto arr = reinterpret_cast<uint16_t*>(&in);
+    swap(arr[0]);
+    swap(arr[1]);
+    return in;
 }
 
 
@@ -154,99 +185,96 @@ uint64_t converter::hex_to_64(const std::string& s)
 //}
 
 
-//uint16_t converter::make_word(std::span<uint8_t,2>& arr)
-//{
-//    return uint16_t(*static_cast<uint16_t*>(arr));
-//}
-
-
-uint16_t converter::make_word(uint8_t lsb, uint8_t msb)
+bool converter::read_word(gsl::span<const uint8_t> in, uint16_t& out) const
 {
-    return lsb | msb << 8;
-}
-
-
-uint32_t converter::make_dword(uint16_t lsw, uint16_t msw)
-{
-    return  lsw | msw << 16;
-}
-
-void converter::split_word(uint16_t word, uint8_t& lsb, uint8_t& msb)
-{
-    lsb = uint8_t(word >> 0);
-    msb = uint8_t(word >> 8);
-}
-
-void converter::split_dword(uint32_t dword, uint16_t& lsw, uint16_t& msw)
-{
-    lsw = uint16_t(dword >> 0);
-    msw = uint16_t(dword >> 16);
-}
-
-
-
-
-bool converter::make_word(const std::vector<uint8_t>& lsb_vector, const std::vector<uint8_t>& msb_vector, std::vector<uint16_t>& word_vector)
-{
-    if (lsb_vector.size() != msb_vector.size()) 
-    {
-        word_vector.clear();
+    if (in.size() < 2)
         return false;
-    }
-    
-    word_vector.resize(lsb_vector.size());
-    for (size_t i = 0; i<lsb_vector.size(); i++)
-    {
-        word_vector[i] = make_word(lsb_vector[i], msb_vector[i]);
-    }
+    std::memcpy(&out, in.data(), 2);
+    out = swap(out);
     return true;
 }
 
 
-template <typename DataType>
-bool converter::convert_vector(const std::vector<uint8_t>& in, std::vector<DataType>& out)
+bool converter::read_dword(gsl::span<const uint8_t> in, uint32_t& out) const
 {
-    throw;
-    return false;
+    if (in.size() < 4)
+        return false;
+    std::memcpy(&out, in.data(), 4);
+    out = swap(out);
+    return true;
 }
 
-template <>
-bool converter::convert_vector<uint16_t>(const std::vector<uint8_t>& in, std::vector<uint16_t>& out)
+template<typename T>
+bool converter::read(gsl::span<const uint8_t> in, T & out)
+{
+    const auto data_size = sizeof T;
+    if (in.size() < data_size)
+        return false;
+    std::memcpy(&out, in.data(), data_size);
+    out = swap(out);
+    return true;
+}
+
+
+bool converter::join_vector(gsl::span<const uint8_t> lo_data, 
+    gsl::span<const uint8_t> hi_data,
+    std::vector<uint16_t>& word_data)
+{
+    auto result = true;
+    if (result) {
+        result = lo_data.size() == hi_data.size();
+    }
+    
+    if (result) {
+        for (size_t i = 0; i < lo_data.size(); i++) {
+            word_data[i] = make_word(lo_data[i], hi_data[i]);
+        }
+    }
+    return true;
+}
+
+bool converter::convert_vector(gsl::span<const uint8_t> in, std::vector<uint8_t>& out) const
+{
+    out.assign(in.cbegin(), in.cend());
+    return true;
+}
+
+
+bool converter::convert_vector(gsl::span<const uint8_t> in, std::vector<uint16_t>& out) const
 {
     const auto data_size = sizeof uint16_t;
     auto result = true;
     result = in.size() % data_size == 0;
-    if (result)
-    {
+    if (result) {
+        out.clear();
         out.reserve(in.size() / data_size);
-        auto iter = in.begin();
-        while (iter != in.end()) {
-            auto o = converter::make_word(*iter++, *iter++);
-
-
-            auto o16 = converter::swap(o);
-            out.push_back(o);
+        for (auto iter = in.cbegin(); iter != in.cend(); iter += data_size) {
+            uint16_t o;
+            result = read_word(gsl::make_span(iter, data_size), o);
+            if (result) {
+                out.push_back(o);
+            }
+            
         }
     }
     return result;
 }
 
-
-template <>
-bool converter::convert_vector<uint32_t>(const std::vector<uint8_t>& in, std::vector<uint32_t>& out)
+bool converter::convert_vector(gsl::span<const uint8_t> in, std::vector<uint32_t>& out) const
 {
     const auto data_size = sizeof uint32_t;
     auto result = true;
     result = in.size() % data_size == 0;
-    if (result)
-    {
+    if (result) {
+        out.clear();
         out.reserve(in.size() / data_size);
-        auto iter = in.begin();
-        while (iter != in.end()) {
-            const auto msw = converter::make_word(*iter++, *iter++);
-            const auto lsw = converter::make_word(*iter++, *iter++);
-            const auto o = converter::make_dword(lsw, msw);
-            out.push_back(o);
+        for (auto iter = in.cbegin(); iter != in.cend(); iter += data_size) {
+            uint32_t o;
+            result = read_dword(gsl::make_span(iter, data_size), o);
+            if (result) {
+                out.push_back(o);
+            }
+
         }
     }
     return result;

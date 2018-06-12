@@ -65,15 +65,15 @@ bool hex_entry_intel::to_string(const hex_entry_intel& entry, std::string& strin
     return true;
 }
 
+
 uint8_t hex_entry_intel::calc_checksum() const
 {
-    uint8_t msb_address;
-    uint8_t lsb_address;
-    converter::split_word(m_address, lsb_address, msb_address);
-
     const auto size = static_cast<uint8_t>(m_data_map.size());
-    uint8_t checksum = size + msb_address + lsb_address + static_cast<uint8_t>(m_record_type);
-    for (auto i:m_data_map) 
+    uint8_t checksum = size + 
+        converter::hi_byte(m_address) + 
+        converter::lo_byte(m_address) + 
+        static_cast<uint8_t>(m_record_type);
+    for (const auto i : m_data_map) 
     {
         checksum += i;
     }
@@ -81,35 +81,42 @@ uint8_t hex_entry_intel::calc_checksum() const
     return checksum;
 }
 
+
 hex_entry_intel::hex_entry_intel(const std::string& entry)
 {
     m_valid = parse(entry, *this);
 }
+
 
 uint16_t hex_entry_intel::address() const
 {
 	return m_address;
 }
 
+
 uint16_t hex_entry_intel::end_address() const
 {
 	return m_address + m_data_map.size();
 }
+
 
 hex_entry_intel::Record_Type hex_entry_intel::record_type() const
 {
 	return m_record_type;
 }
 
+
 std::vector<uint8_t>& hex_entry_intel::data()
 {
     return m_data_map;
 }
 
+
 const std::vector<uint8_t>& hex_entry_intel::const_data() const
 {
 	return m_data_map;
 }
+
 
 std::string hex_entry_intel::to_string() const
 {
@@ -120,10 +127,12 @@ std::string hex_entry_intel::to_string() const
     return "";
 }
 
-bool hex_entry_intel::is_valid() const
+
+bool hex_entry_intel::valid() const
 {
     return m_valid && m_checksum == calc_checksum();
 }
+
 
 bool hex_entry_intel::equals_without_data(const hex_entry_intel& r, const hex_entry_intel& l)
 {

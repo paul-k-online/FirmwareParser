@@ -43,7 +43,7 @@ public:
     std::vector<uint8_t>& data();
 	const std::vector<uint8_t>& const_data() const;
     std::string to_string() const;
-    bool is_valid() const;
+    bool valid() const;
 
     static bool equals_without_data(const hex_entry_intel & r, const hex_entry_intel & l);
     static bool parse(const std::string & string, hex_entry_intel & entry);
